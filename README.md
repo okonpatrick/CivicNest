@@ -46,11 +46,5 @@ justify it.
   CivicNest heading and local-services description.
 - `pnpm build` type-checks the project and creates the production build.
 
-Verified with Node.js 22.19.0 and pnpm 10.17.1:
-
-- `pnpm install --frozen-lockfile` completed with the lockfile up to date.
-- `pnpm dev` reported Vite ready at `http://localhost:5173/`. The browser
-  rendered the CivicNest heading, loaded the project stylesheet, and reported
-  no runtime or console errors.
-- `pnpm test` passed: 1 test file and 1 render test.
-- `pnpm build` passed TypeScript checking and generated the production assets.
+See [the baseline verification receipt](./docs/baseline-verification.md) for
+the recorded test output and live startup/browser checks.
