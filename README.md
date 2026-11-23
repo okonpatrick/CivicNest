@@ -50,24 +50,9 @@ executed command results and tool versions.
 
 ## Workspace architecture
 
-The initial architecture is one Vite application. Its app shell lives in
-`src/app/`, with product areas grouped under `src/features/` as they emerge.
-This keeps the first workspace straightforward to install, run, test, and
-build.
-
-The layout leaves clear boundaries for future ownership:
-
-- `packages/` can hold shared frontend libraries that have their own APIs and
-  consumers.
-- `services/` can hold independently owned service modules, separate from the
-  frontend app shell and its product features.
-
-**Rejected alternative:** starting with a monorepo orchestrator such as Nx or
-Turborepo. It would provide cross-project task pipelines immediately, but
-would also add configuration and workflow concepts before there are multiple
-projects to coordinate. The simple Vite app defers that trade-off; workspace
-orchestration can be chosen later when actual package and service boundaries
-justify it.
+See the short [workspace design note](./docs/workspace-design.md) for the
+folder layout, future package and service boundaries, and the alternative
+considered.
 
 ## Baseline verification
 
