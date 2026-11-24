@@ -26,6 +26,11 @@ for CI. During an early local spike, the full aggregate gate is advisory;
 formatting can be applied with `pnpm format`. Before review or a release
 candidate, typecheck, lint, tests, format verification, and build are blocking.
 
+Vitest is configured in `vite.config.ts` to use `jsdom` and load
+`src/test/setup.ts` before test files. The shared setup installs the
+Testing Library matchers and registers DOM cleanup after each test; test files
+therefore only need to import test-specific dependencies.
+
 ## Executed results
 
 `pnpm typecheck`:

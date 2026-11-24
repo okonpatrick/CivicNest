@@ -26,7 +26,7 @@ Use the package scripts as the single entry point for repeatable checks:
 | ------------------- | --------------------------------------------------------------------------------------------- |
 | `pnpm typecheck`    | Strict TypeScript check, including unused locals/parameters and safer indexed/optional access |
 | `pnpm lint`         | Type-aware ESLint rules for TS/TSX; unused code and unsafe TypeScript patterns fail           |
-| `pnpm test`         | Run the Vitest and Testing Library suite                                                      |
+| `pnpm test`         | Run the Vitest and Testing Library suite in jsdom with shared test setup                      |
 | `pnpm format:check` | Verify Prettier formatting without modifying files                                            |
 | `pnpm format`       | Apply Prettier formatting to supported source, config, and Markdown files                     |
 | `pnpm build`        | Type-check and create the production bundle                                                   |
@@ -36,6 +36,9 @@ The TypeScript project includes `src/`, `packages/`, and `services/`, so the
 same strict checks apply as shared platform packages and service modules are
 added. ESLint applies typed rules to TypeScript in those areas and React hook
 and refresh rules only to TSX files.
+
+Vitest uses the `jsdom` environment and loads `src/test/setup.ts` before each
+test file for shared Testing Library matchers and automatic DOM cleanup.
 
 For an early local spike, the full `pnpm check` can be advisory while code is
 still changing; use `pnpm format` to fix formatting. Before requesting review
