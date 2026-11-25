@@ -61,7 +61,8 @@ respect the line endings of both LF and CRLF checkouts.
   or services that need it. See the [workspace boundary and ownership
   decision](./workspace-design.md) and [shared package contract
   policy](./public-contracts.md). New service interfaces must also follow the
-  [non-functional requirements](./non-functional-requirements.md).
+  [non-functional requirements](./non-functional-requirements.md) and
+  [release operations design](./release-operations.md).
 
 ## Style the UI without leaking app styles
 
