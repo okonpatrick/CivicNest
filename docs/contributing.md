@@ -50,13 +50,16 @@ respect the line endings of both LF and CRLF checkouts.
   `src/features/<feature>/`.
 - Put reusable platform libraries in `packages/<package>/` when they have
   more than one real consumer. Give each package a public entry point; import
-  that API rather than another package's internal files.
+  that API rather than another package's internal files. Shared packages must
+  stay service-neutral and must not depend on service-specific behavior or
+  data.
 - Put independently owned service modules under `services/<service>/`.
-  Services own their domain/API boundary and must not import app-shell
-  components or global presentation code.
+  Services own their domain/API boundary, may consume stable shared contracts,
+  and must not import app-shell components or global presentation code.
 - Until those directories contain projects, keep one Vite app and its root
   quality gates. Don't add a workspace orchestrator without multiple packages
-  or services that need it. See [workspace design](./workspace-design.md).
+  or services that need it. See the [workspace boundary and ownership
+  decision](./workspace-design.md).
 
 ## Style the UI without leaking app styles
 
