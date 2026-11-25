@@ -2,6 +2,9 @@
 
 CivicNest is a React and TypeScript frontend built with Vite.
 
+For setup, boundaries, testing, data-safety, submission, and troubleshooting,
+see the [contributor guide](./docs/contributing.md).
+
 ## Get started
 
 Requires Node.js 20.19+ or 22.12+.
