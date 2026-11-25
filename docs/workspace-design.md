@@ -29,8 +29,10 @@ platform contracts. Shared packages are service-agnostic: they must not import
 from `services/`, contain a service's behavior, or define its service-specific
 data. Shared contracts are limited to stable concepts that genuinely cross
 service boundaries; they are not a place to centralize one service's domain
-model. A service team proposing a contract change reviews its compatibility
-with the platform contract owner before adoption.
+model. Service-specific business logic, domain models, and synthetic request
+schemas or fixtures stay in their owning service module and must never be
+added to a shared platform package. A service team proposing a contract change
+reviews its compatibility with the platform contract owner before adoption.
 
 These are source and ownership boundaries, not promises of separately
 deployable modules. Keep one Vite build and the existing package scripts while
@@ -44,54 +46,45 @@ contract-versioning costs are understood.
 
 ### Dependency and ownership map
 
-```text
-                              CivicNest frontend
+```mermaid
+flowchart TB
+    host["Vite application host<br/>src/app/<br/>Owner: Frontend Platform team"]
 
-       +----------------------------------------------------+
-       | Vite application host: src/app/                    |
-       | Owner: Frontend Platform team                      |
-       +-------------------------+--------------------------+
-                                 |
-                  composes each module through
-                    its documented public API
-              +------------------+------------------+
-              |                  |                  |
-              v                  v                  v
-   +--------------------+ +----------------+ +----------------------+
-   | Resident support   | | Permits        | | Community services   |
-   | services/          | | services/      | | services/            |
-   | resident-support/  | | permits/       | | community-services/  |
-   | Owner: Resident    | | Owner: Permits | | Owner: Community     |
-   | Support Service    | | Service team   | | Services team        |
-   | team               | +-------+--------+ +----------+-----------+
-   +---------+----------+         |                      |
-             | consumes stable, public shared contracts and APIs
-             +-------------------+----------------------+
-                                 v
-       +----------------------------------------------------+
-       | Shared platform packages: packages/                |
-       | Design system, application utilities, and (when    |
-       | justified) service-neutral shared contracts        |
-       | Owners: Frontend Platform team / Contract Steward  |
-       +----------------------------------------------------+
+    subgraph serviceModules["Service modules — each owns its domain behavior and data"]
+        resident["Resident support<br/>services/resident-support/<br/>Owner: Resident Support Service team"]
+        permits["Permits<br/>services/permits/<br/>Owner: Permits Service team"]
+        community["Community services<br/>services/community-services/<br/>Owner: Community Services team"]
+    end
 
-       Shared public API nodes:
-       +------------------+ +---------------------+ +-------------------+
-       | Design system    | | Application utils  | | Shared contracts  |
-       | packages/design- | | packages/app-utils/| | packages/contracts|
-       | system/          | |                    | | (when justified)  |
-       +------------------+ +---------------------+ +-------------------+
-       Owners: Frontend Platform team; Platform Contract Steward for contracts
+    subgraph sharedPackages["Shared platform packages — service-neutral"]
+        design["Design system<br/>packages/design-system/<br/>Frontend Platform team"]
+        utilities["Application utilities<br/>packages/app-utils/<br/>Frontend Platform team"]
+        contracts["Stable shared contracts<br/>packages/contracts/ (when justified)<br/>Platform Contract Steward"]
+    end
 
-       Forbidden dependency: packages/* -X-> services/*
-       Shared packages never contain service-specific behavior or data.
+    host -->|"composes via documented public entry point"| resident
+    host -->|"composes via documented public entry point"| permits
+    host -->|"composes via documented public entry point"| community
+    host -->|"may consume public APIs"| design
+    host -->|"may consume public APIs"| utilities
+    resident -->|"may consume stable public APIs/contracts"| design
+    resident -->|"may consume stable public APIs/contracts"| utilities
+    resident -->|"may consume stable public APIs/contracts"| contracts
+    permits -->|"may consume stable public APIs/contracts"| design
+    permits -->|"may consume stable public APIs/contracts"| utilities
+    permits -->|"may consume stable public APIs/contracts"| contracts
+    community -->|"may consume stable public APIs/contracts"| design
+    community -->|"may consume stable public APIs/contracts"| utilities
+    community -->|"may consume stable public APIs/contracts"| contracts
+    sharedPackages -.->|"FORBIDDEN: no dependency on service behavior or data"| serviceModules
 ```
 
 The host may also consume shared packages through their public APIs. Each
 service consumes only stable shared public APIs or contracts; arrows do not
 authorize importing package internals. `packages/contracts/` is an optional,
 service-neutral package boundary, not a separate runtime or required initial
-project.
+project. The dotted reverse arrow is prohibited: shared packages do not
+depend on service modules, even for types, test fixtures, or example payloads.
 
 `src/features/` remains the home for capabilities that are part of the current
 host application and do not need independent service-team ownership. The
@@ -120,17 +113,21 @@ the platform.
 
 ### Alternatives considered
 
-| Model                                                            | Ownership and isolation                                                                                                                                                                             | Build, runtime, and operations                                                                                                                    | Trade-off and fit                                                                                                                             |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| One undivided application                                        | Easiest to start, but service responsibilities and dependency direction remain implicit; shared code can accumulate domain-specific behavior.                                                       | One existing Vite build and deployment; lowest initial tooling overhead.                                                                          | Fast for a prototype, but weak for the stated future of independently owned service modules.                                                  |
-| **Modular source boundaries in one Vite application (selected)** | Names host, shared packages, stable contracts, and service ownership while keeping domain behavior in its service module. Enforce public entry points and one-way dependencies by review and tests. | Retains the current Vite build, root package scripts, and deployment; no runtime federation or orchestrator required.                             | Provides actionable ownership now with low setup and operational cost; does not claim independent releases or automatic isolation.            |
-| Workspace orchestrator (for example, Nx or Turborepo)            | Can formalize project graphs and package-level ownership once several real projects exist.                                                                                                          | Adds task configuration and conventions; may improve caching and affected-project checks at scale.                                                | Premature with one buildable application. Revisit when multiple packages/apps need coordinated, dependency-aware work.                        |
-| Runtime microfrontends / federation                              | Supports separately delivered modules and release cadence, but requires explicit runtime contracts and ownership of integration failures.                                                           | Adds remote loading, version compatibility, deployment coordination, and more complex testing, security, accessibility, and performance concerns. | Not justified without an independent deployment requirement and operational capacity. Revisit only after a measured need and reviewed design. |
+| Boundary model                                                   | Reuse                                                                                                                                                                                               | Release independence                                                                             | Change risk                                                                                                                         | Operational complexity                                                                                                             |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| One undivided application                                        | Shared code is easy to reach, but unclear ownership encourages either broad coupling or duplicated components; duplicated accessibility fixes can drift.                                            | None; one application is released together.                                                      | Implicit boundaries let service changes leak across the app, while duplicated code can behave inconsistently.                       | Lowest initially: one Vite build and deployment.                                                                                   |
+| **Modular source boundaries in one Vite application (selected)** | Reuse stable design-system, utility, and contract APIs; keep service behavior local. Overly broad shared packages increase coordination cost, so promote only genuinely cross-service capabilities. | Modules have clear owners but are released with the host; independent releases are not promised. | Public APIs and owner reviews limit cross-service impact; one build and review-based boundaries do not provide automatic isolation. | Low and implementable now: retain the Vite build and root scripts without federation or an orchestrator.                           |
+| Independently deployed federated modules                         | Can share versioned platform APIs, but independently managed integrations may also duplicate capabilities.                                                                                          | Highest: services can ship on separate schedules.                                                | Runtime and version mismatches move risk to integration; failures need explicit ownership and monitoring.                           | Highest: remote loading, deployment coordination, compatibility, security, accessibility, and performance need dedicated controls. |
 
 The selected model prioritizes clear ownership and dependency direction while
 avoiding infrastructure that does not yet solve a demonstrated problem. It
 trades automatic project-level enforcement and independent deployment for
 lower setup cost; those are explicit revisit points, not assumed capabilities.
+Compared with the undivided model, it deliberately trades unrestricted reuse
+for narrower, reviewable shared APIs: common accessible primitives reduce
+accessibility drift, while service-specific logic stays independently owned.
+It is the smallest model that makes ownership actionable without claiming
+release independence the current stack does not provide.
 
 ## Current implementation
 
@@ -158,3 +155,16 @@ Review this decision when any of the following becomes true:
 Record the concrete consumers, ownership, import graph, compatibility and
 deployment requirements, quality/performance measurements, and migration
 impact before changing the layout or adding build/runtime infrastructure.
+
+## Verification
+
+- Inspect the diagram: host composition and service-to-shared-package arrows
+  are labeled as allowed; the shared-package-to-service dependency is marked
+  forbidden.
+- Inspect the ownership table: every shared package and service module has an
+  accountable role and a change-approval expectation.
+- Inspect the alternatives table: each model is compared on reuse, release
+  independence, change risk, and operational complexity.
+- Confirm the decision rule keeps service-specific behavior and synthetic
+  request schemas out of shared packages. Run `pnpm format:check` to verify
+  this record follows repository formatting.
