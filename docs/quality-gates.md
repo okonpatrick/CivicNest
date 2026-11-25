@@ -88,3 +88,31 @@ Exit code: 0
 
 `pnpm check` completed lint, the passing render test, formatting verification,
 TypeScript checking, and the production build with exit code 0.
+
+## Clean contributor walkthrough
+
+The contributor instructions were followed on 2026-11-25 in a fresh detached
+worktree at commit `3d03356` (`sprint/month-01-1-7f6b839e`). Before setup,
+neither `node_modules/` nor `dist/` existed. This clean-checkout run used
+Windows PowerShell, Node.js 22.19.0, pnpm 10.17.1, TypeScript 5.9.3,
+ESLint 10.15.0, Prettier 3.10.1, Vite 7.3.8, and Vitest 3.2.7.
+
+| Command                             | Result                                         | Observable result                                                                                                                                      |
+| ----------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm install --frozen-lockfile`    | Exit 0                                         | Installed 258 packages from the lockfile. pnpm reported that the `esbuild` build script was ignored; typecheck, tests, and build all passed afterward. |
+| `Copy-Item .env.example .env.local` | Exit 0                                         | Created the ignored local configuration file from the synthetic example.                                                                               |
+| `pnpm dev`                          | Started successfully; stopped after smoke test | Vite announced `http://localhost:5173/`; `curl` returned HTTP 200.                                                                                     |
+| `pnpm dev -- --port 5174`           | Started successfully; stopped after smoke test | Vite announced `http://localhost:5174/`; `curl` returned HTTP 200.                                                                                     |
+| `pnpm typecheck`                    | Exit 0                                         | `tsc --noEmit -p tsconfig.json` completed without diagnostics.                                                                                         |
+| `pnpm lint`                         | Exit 0                                         | `eslint .` completed without diagnostics.                                                                                                              |
+| `pnpm test`                         | Exit 0                                         | 4 test files and all 6 tests passed.                                                                                                                   |
+| `pnpm format:check`                 | Exit 0                                         | Prettier reported all matched files use its code style.                                                                                                |
+| `pnpm format`                       | Exit 0                                         | Prettier formatted supported files; all files were unchanged.                                                                                          |
+| `pnpm build`                        | Exit 0                                         | TypeScript passed; Vite transformed 30 modules and created fresh `dist/` assets.                                                                       |
+| `pnpm preview`                      | Started successfully; stopped after smoke test | Vite announced `http://localhost:4173/`; `curl` returned HTTP 200 and served the freshly built HTML/assets.                                            |
+| `pnpm check`                        | Exit 0                                         | Lint, all 6 tests, format check, TypeScript, and a production build all passed.                                                                        |
+
+Development and preview servers are long-running commands, so their successful
+result is startup readiness plus the HTTP smoke test; they were stopped after
+verification rather than expected to exit on their own. The preview was run
+after the clean-checkout production build, with no pre-existing build output.
