@@ -39,6 +39,9 @@ advisory; before review or a release candidate, every check it runs is
 blocking. These reproducible local checks are suitable for future CI, but do
 not replace CI. See [quality-gate policy and results](./quality-gates.md).
 
+Prettier uses the checked-in `endOfLine: auto` setting so formatting checks
+respect the line endings of both LF and CRLF checkouts.
+
 ## Keep module boundaries clear
 
 - Keep the app shell in `src/app/` and product-specific UI and behavior under
