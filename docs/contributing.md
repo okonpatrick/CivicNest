@@ -60,7 +60,8 @@ respect the line endings of both LF and CRLF checkouts.
   quality gates. Don't add a workspace orchestrator without multiple packages
   or services that need it. See the [workspace boundary and ownership
   decision](./workspace-design.md) and [shared package contract
-  policy](./public-contracts.md).
+  policy](./public-contracts.md). New service interfaces must also follow the
+  [non-functional requirements](./non-functional-requirements.md).
 
 ## Style the UI without leaking app styles
 
