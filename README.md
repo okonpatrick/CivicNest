@@ -8,8 +8,13 @@ Requires Node.js 20.19+ or 22.12+.
 
 ```sh
 pnpm install
+cp .env.example .env.local
 pnpm dev
 ```
+
+On PowerShell, use `Copy-Item .env.example .env.local` instead of `cp`.
+`.env.local` is required for startup, is ignored, and should contain local
+configuration only.
 
 Vite prints a local URL when the development server is ready. Open that URL to
 see the CivicNest welcome screen. The entry point is `src/main.tsx`, which
@@ -72,3 +77,9 @@ considered.
 
 See [the baseline verification receipt](./docs/baseline-verification.md) for
 the recorded test output and live startup/browser checks.
+
+## Configuration and synthetic test data
+
+See [the configuration and test-data rules](./docs/configuration-and-test-data.md)
+for the required typed runtime setting, visible failure behavior, secret
+handling, and fictional fixture-data policy.

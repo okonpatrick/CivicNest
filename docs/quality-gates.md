@@ -1,6 +1,6 @@
 # Local quality-gate verification receipt
 
-Verified on 2026-11-22 from the repository root on
+Verified on 2026-11-25 from the repository root on
 `sprint/month-01-1-7f6b839e`, with Node.js 22.19.0 and pnpm 10.17.1.
 
 ## Gate policy
@@ -56,14 +56,17 @@ Exit code: 0 (no diagnostics)
 `pnpm test`:
 
 ```text
+✓ src/config/runtime.test.ts (3 tests)
 ✓ src/app/App.test.tsx (1 test)
-Test Files  1 passed (1)
-Tests       1 passed (1)
+✓ src/features/services/ServiceCard.test.tsx (1 test)
+Test Files  3 passed (3)
+Tests       5 passed (5)
 Exit code: 0
 ```
 
-The render test asserts the visible CivicNest heading and local-services
-description.
+Tests assert the configured app-name heading and local-services description,
+validate missing and malformed runtime configuration, and render the synthetic
+community-service fixture.
 
 `pnpm format` applied Prettier to supported JavaScript, TypeScript, CSS, JSON,
 and Markdown files. `pnpm format:check` then reported:
@@ -77,8 +80,8 @@ Exit code: 0
 `pnpm build` passed the TypeScript check and Vite production build:
 
 ```text
-✓ 29 modules transformed.
-✓ built in 1.96s
+✓ 30 modules transformed.
+✓ built in 8.97s
 Exit code: 0
 ```
 
