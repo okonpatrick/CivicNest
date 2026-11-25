@@ -37,7 +37,9 @@ falling back. See [configuration and synthetic data rules](./configuration-and-t
 Run `pnpm check` before requesting review. During early exploration, it can be
 advisory; before review or a release candidate, every check it runs is
 blocking. These reproducible local checks are suitable for future CI, but do
-not replace CI. See [quality-gate policy and results](./quality-gates.md).
+not replace CI. The linked receipt records the setup and every supported
+command from a fresh checkout, including dependency installation and preview.
+See [quality-gate policy and results](./quality-gates.md).
 
 Prettier uses the checked-in `endOfLine: auto` setting so formatting checks
 respect the line endings of both LF and CRLF checkouts.
