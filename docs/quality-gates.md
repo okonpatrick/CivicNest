@@ -59,8 +59,9 @@ Exit code: 0 (no diagnostics)
 ✓ src/config/runtime.test.ts (3 tests)
 ✓ src/app/App.test.tsx (1 test)
 ✓ src/features/services/ServiceCard.test.tsx (1 test)
-Test Files  3 passed (3)
-Tests       5 passed (5)
+✓ src/test/fixtures/community-services.test.ts (1 test)
+Test Files  4 passed (4)
+Tests       6 passed (6)
 Exit code: 0
 ```
 
@@ -81,7 +82,7 @@ Exit code: 0
 
 ```text
 ✓ 30 modules transformed.
-✓ built in 8.97s
+✓ built in 6.13s
 Exit code: 0
 ```
 

@@ -42,9 +42,10 @@ Command: `pnpm test`
 ✓ src/config/runtime.test.ts (3 tests)
 ✓ src/app/App.test.tsx (1 test)
 ✓ src/features/services/ServiceCard.test.tsx (1 test)
+✓ src/test/fixtures/community-services.test.ts (1 test)
 
-Test Files  3 passed (3)
-Tests       5 passed (5)
+Test Files  4 passed (4)
+Tests       6 passed (6)
 ```
 
 Tests check required and malformed runtime configuration, the visible app
@@ -59,5 +60,5 @@ Command: `pnpm build`
 dist/index.html                   0.57 kB
 dist/assets/index-_vYGOaUt.css    0.85 kB
 dist/assets/index-Dj6SYyGt.js   224.01 kB
-✓ built in 8.97s
+✓ built in 6.13s
 ```

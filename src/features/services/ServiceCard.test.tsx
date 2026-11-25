@@ -18,8 +18,6 @@ describe("ServiceCard", () => {
     expect(
       screen.getByRole("heading", { name: "Sampleton Community Library" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("100 Example Avenue, Sampleton, ZZ 00000"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Central service zone")).toBeInTheDocument();
   });
 });

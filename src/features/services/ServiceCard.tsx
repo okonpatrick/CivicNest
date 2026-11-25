@@ -2,7 +2,7 @@ export interface CommunityServiceSummary {
   id: string;
   name: string;
   category: string;
-  location: string;
+  serviceArea: string;
 }
 
 interface ServiceCardProps {
@@ -14,7 +14,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
     <article aria-labelledby={`service-${service.id}`}>
       <h2 id={`service-${service.id}`}>{service.name}</h2>
       <p>{service.category}</p>
-      <p>{service.location}</p>
+      <p>{service.serviceArea}</p>
     </article>
   );
 }

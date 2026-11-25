@@ -33,15 +33,19 @@ Keep real local values in ignored `.env.local`; supply production values
 through deployment configuration, never by editing the example. The existing
 ignore exception allows only the documented example file to be committed.
 
-## Test fixtures
+## Synthetic data policy
+
+Development, automated tests, screenshots, and portfolio demonstrations must
+all use synthetic data only. None of these contexts may contain personal data,
+municipal production data, secrets, or address data. This applies to visible
+text, fixture fields, screenshots, recordings, and example configuration.
 
 Keep test-only records under `src/test/fixtures/`, close to the test suite,
-and keep their TypeScript domain shape with the feature they model. Current
-community-service examples deliberately use fictional names and `ZZ` / sample
-addresses. They are for tests only, not a production directory or a source of
-municipal service facts.
+and keep their TypeScript domain shape with the feature they model. Use
+clearly fictional labels and non-address service-area descriptions. Fixtures
+are for tests and demonstrations only, not a production directory or a source
+of municipal service facts.
 
-Use clearly fictional labels, reserved example domains, and non-routable
-contact details in future examples. Do not copy real resident, employee, or
-service-user data into fixtures. Runtime configuration belongs in the
-configuration boundary and environment files, not in test fixtures.
+Do not copy real resident, employee, or service-user data into development,
+tests, screenshots, or portfolio material. Runtime configuration belongs in
+the configuration boundary and environment files, not in test fixtures.
