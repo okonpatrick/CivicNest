@@ -66,8 +66,8 @@ Exit code: 0
 ```
 
 Tests assert the configured app-name heading and local-services description,
-validate missing and malformed runtime configuration, and render the synthetic
-community-service fixture.
+validate missing and malformed runtime configuration, and render generic
+synthetic service data with a non-address service area.
 
 `pnpm format` applied Prettier to supported JavaScript, TypeScript, CSS, JSON,
 and Markdown files. `pnpm format:check` then reported:
@@ -82,7 +82,7 @@ Exit code: 0
 
 ```text
 ✓ 30 modules transformed.
-✓ built in 6.13s
+✓ built in 8.70s
 Exit code: 0
 ```
 

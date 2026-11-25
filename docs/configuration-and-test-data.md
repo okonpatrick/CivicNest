@@ -15,9 +15,9 @@ pnpm dev
 variable in browser code. Never put passwords, API keys, tokens, private
 credentials, personal information, or other secrets in a `VITE_*` variable,
 environment example, source file, or fixture. Use public synthetic values in
-examples; provide any public production endpoints through deployment
-configuration. Keep secrets in a protected server-side environment or secret
-manager.
+examples. Production endpoints belong only in the appropriate deployment
+configuration, not in examples or demonstration artifacts. Keep secrets in a
+protected server-side environment or secret manager.
 
 Add future settings to `src/vite-env.d.ts` and validate them in
 `src/config/runtime.ts`. Required values must be checked at the typed
@@ -37,14 +37,17 @@ ignore exception allows only the documented example file to be committed.
 
 Development, automated tests, screenshots, and portfolio demonstrations must
 all use synthetic data only. None of these contexts may contain personal data,
-municipal production data, secrets, or address data. This applies to visible
-text, fixture fields, screenshots, recordings, and example configuration.
+municipal production data, secrets, personal names, account identifiers,
+addresses, real service requests, or production endpoints. This applies to
+visible text, fixture fields, screenshots, recordings, and example
+configuration.
 
 Keep test-only records under `src/test/fixtures/`, close to the test suite,
-and keep their TypeScript domain shape with the feature they model. Use
-clearly fictional labels and non-address service-area descriptions. Fixtures
-are for tests and demonstrations only, not a production directory or a source
-of municipal service facts.
+and keep their TypeScript domain shape with the feature they model. Use generic
+service categories and non-address service-area descriptions. Fixture queries
+must be invented examples, never copied from actual residents. Fixtures are
+for tests and demonstrations only, not a production directory or a source of
+municipal service facts.
 
 Do not copy real resident, employee, or service-user data into development,
 tests, screenshots, or portfolio material. Runtime configuration belongs in

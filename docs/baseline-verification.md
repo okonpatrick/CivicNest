@@ -49,7 +49,8 @@ Tests       6 passed (6)
 ```
 
 Tests check required and malformed runtime configuration, the visible app
-heading and local-services description, and a synthetic service card.
+heading and local-services description, and a generic public-library service
+card with a non-address service-area description.
 
 ## Production build
 
@@ -60,5 +61,5 @@ Command: `pnpm build`
 dist/index.html                   0.57 kB
 dist/assets/index-_vYGOaUt.css    0.85 kB
 dist/assets/index-Dj6SYyGt.js   224.01 kB
-✓ built in 6.13s
+✓ built in 8.70s
 ```

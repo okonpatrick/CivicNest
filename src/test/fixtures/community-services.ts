@@ -30,13 +30,11 @@ const publicLibraryRequest: SyntheticServiceRequest = {
 const successfulServices: CommunityServiceSummary[] = [
   {
     id: "sample-library",
-    name: "Sampleton Community Library",
     category: "Public library",
     serviceArea: "Central service zone",
   },
   {
     id: "sample-help-desk",
-    name: "Exampleton Resident Help Desk",
     category: "Resident support",
     serviceArea: "North service zone",
   },

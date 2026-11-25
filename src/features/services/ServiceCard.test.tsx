@@ -16,7 +16,7 @@ describe("ServiceCard", () => {
     render(<ServiceCard service={library} />);
 
     expect(
-      screen.getByRole("heading", { name: "Sampleton Community Library" }),
+      screen.getByRole("heading", { name: "Public library" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Central service zone")).toBeInTheDocument();
   });
