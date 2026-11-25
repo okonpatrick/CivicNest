@@ -67,9 +67,9 @@ executed command results and tool versions.
 
 ## Workspace architecture
 
-See the short [workspace design note](./docs/workspace-design.md) for the
-folder layout, future package and service boundaries, and the alternative
-considered.
+See the [workspace boundary decision](./docs/workspace-design.md) for the
+dependency map, service ownership and review roles, and the trade-offs behind
+the initial single-build layout.
 
 ## Baseline verification
 

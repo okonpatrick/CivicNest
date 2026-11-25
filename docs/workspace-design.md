@@ -45,41 +45,53 @@ contract-versioning costs are understood.
 ### Dependency and ownership map
 
 ```text
-                         CivicNest frontend
+                              CivicNest frontend
 
-             +---------------------------------+
-             | Vite application host           |
-             | src/app/                        |
-             | Owner: Frontend Platform team   |
-             +---------------+-----------------+
-                             |
-                  composes public entry points
-                             v
-             +---------------------------------+
-             | Service modules                 |
-             | services/<service>/             |
-             | Owner: owning Service team      |
-             +---------------+-----------------+
-                             |
-                  consumes stable public APIs
-                             v
-             +---------------------------------+
-             | Shared platform packages       |
-             | packages/<package>/             |
-             | Owner: Frontend Platform team   |
-             |                                 |
-             | packages/contracts/ (only when |
-             | justified by real consumers)    |
-             | Owner: Platform Contract Steward|
-             +---------------------------------+
+       +----------------------------------------------------+
+       | Vite application host: src/app/                    |
+       | Owner: Frontend Platform team                      |
+       +-------------------------+--------------------------+
+                                 |
+                  composes each module through
+                    its documented public API
+              +------------------+------------------+
+              |                  |                  |
+              v                  v                  v
+   +--------------------+ +----------------+ +----------------------+
+   | Resident support   | | Permits        | | Community services   |
+   | services/          | | services/      | | services/            |
+   | resident-support/  | | permits/       | | community-services/  |
+   | Owner: Resident    | | Owner: Permits | | Owner: Community     |
+   | Support Service    | | Service team   | | Services team        |
+   | team               | +-------+--------+ +----------+-----------+
+   +---------+----------+         |                      |
+             | consumes stable, public shared contracts and APIs
+             +-------------------+----------------------+
+                                 v
+       +----------------------------------------------------+
+       | Shared platform packages: packages/                |
+       | Design system, application utilities, and (when    |
+       | justified) service-neutral shared contracts        |
+       | Owners: Frontend Platform team / Contract Steward  |
+       +----------------------------------------------------+
 
-     Forbidden reverse dependency:
-     packages/*  -X->  services/* or service-specific behavior/data
+       Shared public API nodes:
+       +------------------+ +---------------------+ +-------------------+
+       | Design system    | | Application utils  | | Shared contracts  |
+       | packages/design- | | packages/app-utils/| | packages/contracts|
+       | system/          | |                    | | (when justified)  |
+       +------------------+ +---------------------+ +-------------------+
+       Owners: Frontend Platform team; Platform Contract Steward for contracts
+
+       Forbidden dependency: packages/* -X-> services/*
+       Shared packages never contain service-specific behavior or data.
 ```
 
-The host also consumes shared platform packages through their public APIs.
-`packages/contracts/` is one possible service-neutral package boundary; it is
-not a separate runtime or required initial project.
+The host may also consume shared packages through their public APIs. Each
+service consumes only stable shared public APIs or contracts; arrows do not
+authorize importing package internals. `packages/contracts/` is an optional,
+service-neutral package boundary, not a separate runtime or required initial
+project.
 
 `src/features/` remains the home for capabilities that are part of the current
 host application and do not need independent service-team ownership. The
@@ -89,31 +101,36 @@ projects already exist.
 
 ### Boundary ownership and responsibilities
 
-| Boundary                                              | Accountable owner role                               | Owns                                                                                    | Must not                                                                 |
-| ----------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Application host (`src/app/`)                         | Frontend Platform team                               | Startup, navigation, configuration, and composition of feature and service entry points | Accumulate service-specific business rules or import service internals   |
-| Host feature (`src/features/<feature>/`)              | Frontend Platform team, with capability contributors | Host-level UI and behavior that has no separate service owner                           | Become a back door around a service module's public API                  |
-| Service module (`services/<service>/`)                | Owning Service team                                  | Its user journey, domain behavior, and adapter to its service boundary                  | Import host internals or another module's private files                  |
-| Shared platform package (`packages/<package>/`)       | Frontend Platform team                               | Reusable, service-neutral capabilities and their documented public API                  | Depend on service code, service-specific behavior, or service-owned data |
-| Shared contracts (`packages/contracts/`, when needed) | Platform Contract Steward                            | Compatibility and review of genuinely shared, stable contracts                          | Absorb a single service's domain model or change without consumer review |
+| Boundary                                                             | Accountable owner role                               | Responsibility                                                                                                                   | Change approval and review                                                                                                                                                                      |
+| -------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Application host (`src/app/`)                                        | Frontend Platform team                               | Startup, navigation, configuration, and composition through service public entry points                                          | Frontend Platform team approves host changes; host/service integration changes are reviewed by the affected service owner.                                                                      |
+| Host feature (`src/features/<feature>/`)                             | Frontend Platform team, with capability contributors | Host-level UI and behavior without an independent service owner                                                                  | Frontend Platform team approves routine work; changes crossing into an owned service boundary require that service team's review.                                                               |
+| Shared design system (`packages/design-system/`, when justified)     | Frontend Platform team                               | Accessible shared tokens, primitives, and generic components; no service workflows, domain rules, or service-owned content       | Frontend Platform team approves routine changes and public API changes; affected package consumers review compatibility-impacting changes.                                                      |
+| Shared application utilities (`packages/app-utils/`, when justified) | Frontend Platform team                               | Service-neutral configuration, navigation primitives, error handling, and other genuinely cross-service application capabilities | Frontend Platform team approves routine changes and public API changes; affected consumers review compatibility-impacting changes.                                                              |
+| Shared contracts (`packages/contracts/`, when needed)                | Platform Contract Steward                            | Compatibility and review of stable concepts genuinely shared across services                                                     | Contract Steward approves additions and changes after affected service owners review compatibility; breaking changes require explicit approval from affected consumers.                         |
+| Resident support (`services/resident-support/`)                      | Resident Support Service team                        | Resident-support discovery and its service-owned assistance/request journey and domain rules                                     | Resident Support Service team approves routine behavior and service API changes; Frontend Platform team reviews host integration, and affected contract consumers review compatibility changes. |
+| Permits (`services/permits/`)                                        | Permits Service team                                 | Permit information, eligibility guidance, application workflow, and permit-specific status/domain rules                          | Permits Service team approves routine behavior and service API changes; Frontend Platform team reviews host integration, and affected contract consumers review compatibility changes.          |
+| Community services (`services/community-services/`)                  | Community Services team                              | Community-service discovery, categories, filtering, and service-specific presentation/data rules                                 | Community Services team approves routine behavior and service API changes; Frontend Platform team reviews host integration, and affected contract consumers review compatibility changes.       |
 
-The owning role is accountable for review and maintenance; it is not a named
-individual. Each package or module publishes its supported entry point.
-Consumers import only that entry point, not internal paths.
+The owning role is accountable for routine maintenance and approval; it is
+not a named individual. Each package or module publishes its supported entry
+point, and consumers import only that API. Shared-package owners may reject a
+service-specific behavior or data proposal rather than incorporating it into
+the platform.
 
 ### Alternatives considered
 
-- **One undivided application:** simplest initially, but it does not record
-  responsibility or import direction as service ownership is introduced.
-- **Nx or Turborepo from the first commit:** provides task orchestration for
-  multiple projects, but adds configuration and operational conventions before
-  there are projects to coordinate. Reconsider when real project count and
-  build needs justify it.
-- **Runtime federation and separate service deployments immediately:** could
-  allow independent release, but introduces runtime integration, versioning,
-  failure, accessibility, and performance concerns without a current
-  independent-release requirement. Reconsider only with an explicit
-  operational need and a reviewed deployment design.
+| Model                                                            | Ownership and isolation                                                                                                                                                                             | Build, runtime, and operations                                                                                                                    | Trade-off and fit                                                                                                                             |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| One undivided application                                        | Easiest to start, but service responsibilities and dependency direction remain implicit; shared code can accumulate domain-specific behavior.                                                       | One existing Vite build and deployment; lowest initial tooling overhead.                                                                          | Fast for a prototype, but weak for the stated future of independently owned service modules.                                                  |
+| **Modular source boundaries in one Vite application (selected)** | Names host, shared packages, stable contracts, and service ownership while keeping domain behavior in its service module. Enforce public entry points and one-way dependencies by review and tests. | Retains the current Vite build, root package scripts, and deployment; no runtime federation or orchestrator required.                             | Provides actionable ownership now with low setup and operational cost; does not claim independent releases or automatic isolation.            |
+| Workspace orchestrator (for example, Nx or Turborepo)            | Can formalize project graphs and package-level ownership once several real projects exist.                                                                                                          | Adds task configuration and conventions; may improve caching and affected-project checks at scale.                                                | Premature with one buildable application. Revisit when multiple packages/apps need coordinated, dependency-aware work.                        |
+| Runtime microfrontends / federation                              | Supports separately delivered modules and release cadence, but requires explicit runtime contracts and ownership of integration failures.                                                           | Adds remote loading, version compatibility, deployment coordination, and more complex testing, security, accessibility, and performance concerns. | Not justified without an independent deployment requirement and operational capacity. Revisit only after a measured need and reviewed design. |
+
+The selected model prioritizes clear ownership and dependency direction while
+avoiding infrastructure that does not yet solve a demonstrated problem. It
+trades automatic project-level enforcement and independent deployment for
+lower setup cost; those are explicit revisit points, not assumed capabilities.
 
 ## Current implementation
 
