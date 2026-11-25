@@ -156,6 +156,9 @@ Record the concrete consumers, ownership, import graph, compatibility and
 deployment requirements, quality/performance measurements, and migration
 impact before changing the layout or adding build/runtime infrastructure.
 
+For public entry-point, semantic-versioning, deprecation, and contract-test
+expectations, see the [shared package contract policy](./public-contracts.md).
+
 ## Verification
 
 - Inspect the diagram: host composition and service-to-shared-package arrows

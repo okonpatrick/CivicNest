@@ -59,7 +59,8 @@ respect the line endings of both LF and CRLF checkouts.
 - Until those directories contain projects, keep one Vite app and its root
   quality gates. Don't add a workspace orchestrator without multiple packages
   or services that need it. See the [workspace boundary and ownership
-  decision](./workspace-design.md).
+  decision](./workspace-design.md) and [shared package contract
+  policy](./public-contracts.md).
 
 ## Style the UI without leaking app styles
 
