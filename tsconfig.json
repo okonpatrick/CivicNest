@@ -18,7 +18,16 @@
     "noImplicitOverride": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@civicnest/design-tokens": ["packages/design-tokens/index.ts"],
+      "@civicnest/ui": ["packages/ui/index.tsx"],
+      "@civicnest/utils": ["packages/utils/index.ts"],
+      "@civicnest/resident-support": ["services/resident-support/index.tsx"],
+      "@civicnest/permits": ["services/permits/index.tsx"],
+      "@civicnest/community-services": ["services/community-services/index.tsx"]
+    }
   },
   "include": ["src", "packages", "services", "vite.config.ts"]
 }
