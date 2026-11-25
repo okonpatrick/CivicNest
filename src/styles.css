@@ -56,3 +56,13 @@ body {
   font-size: 1.125rem;
   line-height: 1.6;
 }
+
+.startup-error {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.startup-error h1 {
+  color: #8b2e2e;
+}

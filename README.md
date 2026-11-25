@@ -2,14 +2,22 @@
 
 CivicNest is a React and TypeScript frontend built with Vite.
 
+For setup, boundaries, testing, data-safety, submission, and troubleshooting,
+see the [contributor guide](./docs/contributing.md).
+
 ## Get started
 
 Requires Node.js 20.19+ or 22.12+.
 
 ```sh
 pnpm install
+cp .env.example .env.local
 pnpm dev
 ```
+
+On PowerShell, use `Copy-Item .env.example .env.local` instead of `cp`.
+`.env.local` is required for startup, is ignored, and should contain local
+configuration only.
 
 Vite prints a local URL when the development server is ready. Open that URL to
 see the CivicNest welcome screen. The entry point is `src/main.tsx`, which
@@ -26,7 +34,7 @@ Use the package scripts as the single entry point for repeatable checks:
 | ------------------- | --------------------------------------------------------------------------------------------- |
 | `pnpm typecheck`    | Strict TypeScript check, including unused locals/parameters and safer indexed/optional access |
 | `pnpm lint`         | Type-aware ESLint rules for TS/TSX; unused code and unsafe TypeScript patterns fail           |
-| `pnpm test`         | Run the Vitest and Testing Library suite                                                      |
+| `pnpm test`         | Run the Vitest and Testing Library suite in jsdom with shared test setup                      |
 | `pnpm format:check` | Verify Prettier formatting without modifying files                                            |
 | `pnpm format`       | Apply Prettier formatting to supported source, config, and Markdown files                     |
 | `pnpm build`        | Type-check and create the production bundle                                                   |
@@ -37,6 +45,9 @@ same strict checks apply as shared platform packages and service modules are
 added. ESLint applies typed rules to TypeScript in those areas and React hook
 and refresh rules only to TSX files.
 
+Vitest uses the `jsdom` environment and loads `src/test/setup.ts` before each
+test file for shared Testing Library matchers and automatic DOM cleanup.
+
 For an early local spike, the full `pnpm check` can be advisory while code is
 still changing; use `pnpm format` to fix formatting. Before requesting review
 or preparing a release candidate, `pnpm typecheck`, `pnpm lint`, `pnpm test`,
@@ -45,29 +56,20 @@ blocking checks together. These local commands provide reproducible evidence
 for contributors and a future automation pipeline to invoke; they do not
 replace continuous integration.
 
+Keeping the aggregate gate advisory during early exploration avoids slowing
+down low-risk experiments. Making type, test, formatting, and production-build
+checks blocking before review or release helps municipal service teams catch
+regressions early and make dependable changes for residents and service staff.
+Future CI can run these same reproducible commands as an additional safeguard.
+
 See [the quality-gate verification receipt](./docs/quality-gates.md) for the
 executed command results and tool versions.
 
 ## Workspace architecture
 
-The initial architecture is one Vite application. Its app shell lives in
-`src/app/`, with product areas grouped under `src/features/` as they emerge.
-This keeps the first workspace straightforward to install, run, test, and
-build.
-
-The layout leaves clear boundaries for future ownership:
-
-- `packages/` can hold shared frontend libraries that have their own APIs and
-  consumers.
-- `services/` can hold independently owned service modules, separate from the
-  frontend app shell and its product features.
-
-**Rejected alternative:** starting with a monorepo orchestrator such as Nx or
-Turborepo. It would provide cross-project task pipelines immediately, but
-would also add configuration and workflow concepts before there are multiple
-projects to coordinate. The simple Vite app defers that trade-off; workspace
-orchestration can be chosen later when actual package and service boundaries
-justify it.
+See the short [workspace design note](./docs/workspace-design.md) for the
+folder layout, future package and service boundaries, and the alternative
+considered.
 
 ## Baseline verification
 
@@ -78,3 +80,9 @@ justify it.
 
 See [the baseline verification receipt](./docs/baseline-verification.md) for
 the recorded test output and live startup/browser checks.
+
+## Configuration and synthetic test data
+
+See [the configuration and test-data rules](./docs/configuration-and-test-data.md)
+for the required typed runtime setting, visible failure behavior, secret
+handling, and fictional fixture-data policy.
