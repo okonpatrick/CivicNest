@@ -26,6 +26,12 @@ for CI. During an early local spike, the full aggregate gate is advisory;
 formatting can be applied with `pnpm format`. Before review or a release
 candidate, typecheck, lint, tests, format verification, and build are blocking.
 
+This balance helps municipal service teams move quickly while exploring, then
+catch type-safety, behavior, consistency, and production-build problems before
+changes reach review or release. Passing these checks gives teams a dependable
+baseline for changes that residents and service staff rely on; CI remains a
+separate safeguard.
+
 Vitest is configured in `vite.config.ts` to use `jsdom` and load
 `src/test/setup.ts` before test files. The shared setup installs the
 Testing Library matchers and registers DOM cleanup after each test; test files

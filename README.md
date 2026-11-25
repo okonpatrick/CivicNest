@@ -48,6 +48,12 @@ blocking checks together. These local commands provide reproducible evidence
 for contributors and a future automation pipeline to invoke; they do not
 replace continuous integration.
 
+Keeping the aggregate gate advisory during early exploration avoids slowing
+down low-risk experiments. Making type, test, formatting, and production-build
+checks blocking before review or release helps municipal service teams catch
+regressions early and make dependable changes for residents and service staff.
+Future CI can run these same reproducible commands as an additional safeguard.
+
 See [the quality-gate verification receipt](./docs/quality-gates.md) for the
 executed command results and tool versions.
 
