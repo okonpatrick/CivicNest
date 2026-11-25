@@ -57,6 +57,20 @@ body {
   line-height: 1.6;
 }
 
+.service-list {
+  display: grid;
+  width: min(100%, 64rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.service-list h2 {
+  margin-top: 0;
+  color: #39765c;
+}
+
 .startup-error {
   max-width: 48rem;
   margin: 0 auto;

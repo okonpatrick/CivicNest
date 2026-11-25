@@ -48,17 +48,19 @@ respect the line endings of both LF and CRLF checkouts.
 
 - Keep the app shell in `src/app/` and product-specific UI and behavior under
   `src/features/<feature>/`.
-- Put reusable platform libraries in `packages/<package>/` when they have
-  more than one real consumer. Give each package a public entry point; import
-  that API rather than another package's internal files. Shared packages must
-  stay service-neutral and must not depend on service-specific behavior or
-  data.
+- Shared package entry points are `@civicnest/design-tokens`,
+  `@civicnest/ui`, and `@civicnest/utils`. Import those public APIs rather
+  than package implementation paths. Shared packages must stay service-neutral
+  and must not depend on service-specific behavior or data.
 - Put independently owned service modules under `services/<service>/`.
-  Services own their domain/API boundary, may consume stable shared contracts,
-  and must not import app-shell components or global presentation code.
-- Until those directories contain projects, keep one Vite app and its root
-  quality gates. Don't add a workspace orchestrator without multiple packages
-  or services that need it. See the [workspace boundary and ownership
+  Their public entry points are `@civicnest/resident-support`,
+  `@civicnest/permits`, and `@civicnest/community-services`. Services own
+  their domain/API boundary, may consume stable shared contracts, and must
+  not import app-shell components or global presentation code.
+- The package aliases are mapped explicitly in TypeScript and Vite. Keep the
+  single Vite build and root quality gates; don't add runtime federation or
+  workspace orchestration until a demonstrated deployment or build need
+  justifies it. See the [workspace boundary and ownership
   decision](./workspace-design.md) and [shared package contract
   policy](./public-contracts.md). New service interfaces must also follow the
   [non-functional requirements](./non-functional-requirements.md) and

@@ -1,3 +1,7 @@
+import { CommunityServicesModule } from "@civicnest/community-services";
+import { PermitsModule } from "@civicnest/permits";
+import { ResidentSupportModule } from "@civicnest/resident-support";
+
 interface AppProps {
   appName: string;
 }
@@ -10,6 +14,11 @@ export default function App({ appName }: AppProps) {
       <p className="welcome__description">
         Your home for discovering and connecting with local services.
       </p>
+      <section className="service-list" aria-label="Available services">
+        <ResidentSupportModule />
+        <PermitsModule />
+        <CommunityServicesModule />
+      </section>
     </main>
   );
 }

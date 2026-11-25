@@ -19,26 +19,25 @@ ownership and dependency direction.
 ### Decision
 
 Keep the public surface small and intentional. Each shared package documents
-one supported entry point, such as `packages/design-system/index.ts`. Consumers
-import from that entry point only:
+one supported entry point, such as `packages/ui/index.tsx`. Consumers import
+from that entry point only:
 
 ```ts
-import { Button, tokens } from "@civicnest/design-system";
+import { ServiceCard } from "@civicnest/ui";
 ```
 
-Do not treat internal paths (for example,
-`@civicnest/design-system/src/components/Button/internal`) as public. Do not
-add wildcard exports for internal folders. A symbol becomes public only when
+Do not treat internal paths (for example, `@civicnest/ui/internal`) as public.
+Do not add wildcard exports for internal folders. A symbol becomes public only when
 it is deliberately exported at the package entry point and documented with
 its purpose, inputs, behavior, and compatibility expectations. Service modules
 may import these public APIs and stable shared contracts; shared packages
 remain independent of service modules.
 
-For the current single-build workspace, package versions are compatibility
-signals recorded in the package manifest when real packages are introduced;
-they do not imply independent deployment. The PR adding a contract change
-states the affected package and its intended semantic-version impact. Apply
-Semantic Versioning to the public API:
+For the current single-build workspace, modules are not independently
+published or versioned. If separately versioned package manifests are
+introduced later, their versions are compatibility signals, not a promise of
+independent deployment. A change proposal states the affected package and its
+intended semantic-version impact. Apply Semantic Versioning to the public API:
 
 | Change                       | Version impact | Examples                                                                                                                                                     |
 | ---------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
