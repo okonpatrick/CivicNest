@@ -90,6 +90,27 @@ hierarchical semantic token. The migration guide documents the earlier flat
 alias and its deprecation window. See the
 [token migration guide](./deprecation-and-migration.md#implemented-example-coloraccent-to-coloremphasis).
 
+## Synthetic fixture review
+
+The rendered service fixtures and the independent Permits consumer example
+were reviewed at the source and traced to their rendered fields. All values
+below are generic, authored examples; none contains a resident identity,
+request identifier, contact detail, exact appointment, or production response.
+Keep these fixtures synthetic and do not replace them with copied service data.
+
+| Fixture                                        | Fields rendered by                                                                                                     | Reviewed values                                                                                                                                                                                                               |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `services/resident-support/demo-fixtures.ts`   | `services/resident-support/index.tsx` renders `summary`, `category`, and each `topics` item.                           | `Example guidance is ready to explore.`; `General guidance`; `Getting started`, `Community resources`, `Common questions`.                                                                                                    |
+| `services/permits/demo-fixtures.ts`            | `services/permits/index.tsx` renders the loading `message`, then each success option's `label` and `detail`.           | `Loading sample appointment options.`; `Example option A` / `A sample weekday time window.`; `Example option B` / `Another sample weekday time window.`                                                                       |
+| `services/community-services/demo-fixtures.ts` | `services/community-services/index.tsx` renders the error `message`, then each success service's `name` and `summary`. | `The synthetic sample request failed. Example services could not be loaded.`; `Community learning` / `A synthetic example of a local learning resource.`; `Shared spaces` / `A synthetic example of a neighborhood resource.` |
+| `consumer-fixtures/permits/demo-fixtures.ts`   | `consumer-fixtures/permits/index.tsx` renders each option's `label` and `detail` in the `PermitsSummary` status.       | `Example option A` / `A sample weekday time window.`; `Example option B` / `Another sample weekday time window.`                                                                                                              |
+
+These are separate service-owned fixtures, including the consumer fixture; the
+overlapping Permits examples are not sourced from a live service or shared
+request model. The checked-in declarations are explicitly marked
+synthetic-only. Tests exercise representative rendered text and accessible
+states; use `pnpm test` to verify those outcomes.
+
 ## Dependency ranges, upgrades, and release evidence
 
 Today, CivicNest is a single Vite build: packages and services are source

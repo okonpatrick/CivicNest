@@ -7,6 +7,7 @@ export type PermitsDemoFixture =
   | { status: "loading"; message: string }
   | { status: "success"; options: readonly PermitOptionDemoFixture[] };
 
+// Synthetic-only examples; never populate this fixture from permit requests.
 export const permitsLoadingDemoFixture: PermitsDemoFixture = {
   status: "loading",
   message: "Loading sample appointment options.",

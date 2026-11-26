@@ -4,6 +4,7 @@ export interface ResidentSupportDemoFixture {
   topics: readonly string[];
 }
 
+// Synthetic-only examples; never populate this fixture from resident records.
 export const residentSupportDemoFixture: ResidentSupportDemoFixture = {
   category: "General guidance",
   summary: "Example guidance is ready to explore.",

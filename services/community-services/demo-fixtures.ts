@@ -7,6 +7,7 @@ export type CommunityServicesDemoFixture =
   | { status: "error"; message: string }
   | { status: "success"; services: readonly CommunityServiceDemoFixture[] };
 
+// Synthetic-only examples; never populate this fixture from service records.
 export const communityServicesErrorDemoFixture: CommunityServicesDemoFixture = {
   status: "error",
   message:
