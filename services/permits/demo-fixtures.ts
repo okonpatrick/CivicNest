@@ -16,10 +16,16 @@ export const permitsLoadingDemoFixture: PermitsDemoFixture = {
 export const permitsSuccessDemoFixture: PermitsDemoFixture = {
   status: "success",
   options: [
-    { label: "Example option A", detail: "A sample weekday time window." },
     {
-      label: "Example option B",
-      detail: "Another sample weekday time window.",
+      label: "Example option A: a fictional weekday morning appointment window",
+      detail:
+        "A synthetic example of available times; choosing this option does not reserve an appointment or send a request.",
+    },
+    {
+      label:
+        "Example option B: a fictional weekday afternoon appointment window",
+      detail:
+        "Another synthetic example with longer explanatory text that should wrap within a narrow card.",
     },
   ],
 };

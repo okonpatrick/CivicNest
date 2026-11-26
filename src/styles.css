@@ -27,10 +27,12 @@ body {
 
 .welcome {
   display: grid;
+  width: 100%;
+  min-width: 0;
   min-height: 100vh;
   align-content: center;
   justify-items: center;
-  padding: 2rem;
+  padding: 2rem var(--cn-responsive-page-gutter-compact);
   text-align: center;
 }
 
@@ -65,11 +67,26 @@ body {
 
 .service-list {
   display: grid;
-  width: min(100%, 64rem);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  width: min(100%, var(--cn-responsive-content-max));
+  min-width: 0;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, var(--cn-responsive-card-minimum)), 1fr)
+  );
   gap: 1rem;
   margin-top: 2rem;
   text-align: left;
+}
+
+.service-card {
+  min-width: 0;
+  padding: var(--cn-responsive-card-inset-compact);
+  overflow-wrap: anywhere;
+}
+
+.service-card :where(p, li, strong, h2, h3) {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .service-list h2 {
@@ -82,7 +99,9 @@ body {
 }
 
 .service-demo__status {
+  min-width: 0;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .service-demo__status--success,
@@ -118,13 +137,16 @@ body {
 }
 
 .service-demo__field-error {
+  min-width: 0;
   padding: 0.5rem 0.75rem;
   border-left: 0.25rem solid var(--cn-color-validation-error-border);
   background: var(--cn-color-validation-error-surface);
   color: var(--cn-color-validation-error-text);
+  overflow-wrap: anywhere;
 }
 
 .service-demo__action {
+  max-width: 100%;
   min-height: 2.75rem;
   padding: 0.65rem 0.9rem;
   border: 1px solid var(--cn-color-action-border);
@@ -134,6 +156,9 @@ body {
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .service-demo__action:not(:disabled):hover {
@@ -170,4 +195,20 @@ body {
 
 .startup-error h1 {
   color: #8b2e2e;
+}
+
+@media (min-width: 40rem) {
+  .welcome {
+    padding-inline: var(--cn-responsive-page-gutter-wide);
+  }
+
+  .service-card {
+    padding: var(--cn-responsive-card-inset-wide);
+  }
+}
+
+@media (min-width: 64rem) {
+  .service-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }

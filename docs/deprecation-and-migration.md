@@ -273,7 +273,7 @@ The following checks were performed for the deprecation example on
 | Production build                                                       | `pnpm build`                        | Passed — 39 modules                                                                                                                                                          |
 
 Latest full verification on 2026-11-26: `pnpm check` passed lint, dependency
-boundaries (21 source files), all 17 tests in 5 files, formatting, TypeScript,
+boundaries (21 source files), all 18 tests in 5 files, formatting, TypeScript,
 and the 39-module production build. Standalone `pnpm typecheck` also passed.
 
 #### Keyboard focus and visible focus indicator

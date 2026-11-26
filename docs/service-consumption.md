@@ -102,18 +102,51 @@ below are generic, authored examples; none contains a resident identity,
 request identifier, contact detail, exact appointment, or production response.
 Keep these fixtures synthetic and do not replace them with copied service data.
 
-| Fixture                                        | Fields rendered by                                                                                                     | Reviewed values                                                                                                                                                                                                               |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `services/resident-support/demo-fixtures.ts`   | `services/resident-support/index.tsx` renders `summary`, `category`, and each `topics` item.                           | `Example guidance is ready to explore.`; `General guidance`; `Getting started`, `Community resources`, `Common questions`.                                                                                                    |
-| `services/permits/demo-fixtures.ts`            | `services/permits/index.tsx` renders the loading `message`, then each success option's `label` and `detail`.           | `Loading sample appointment options.`; `Example option A` / `A sample weekday time window.`; `Example option B` / `Another sample weekday time window.`                                                                       |
-| `services/community-services/demo-fixtures.ts` | `services/community-services/index.tsx` renders the error `message`, then each success service's `name` and `summary`. | `The synthetic sample request failed. Example services could not be loaded.`; `Community learning` / `A synthetic example of a local learning resource.`; `Shared spaces` / `A synthetic example of a neighborhood resource.` |
-| `consumer-fixtures/permits/demo-fixtures.ts`   | `consumer-fixtures/permits/index.tsx` renders each option's `label` and `detail` in the `PermitsSummary` status.       | `Example option A` / `A sample weekday time window.`; `Example option B` / `Another sample weekday time window.`                                                                                                              |
+| Fixture                                        | Fields rendered by                                                                                                     | Reviewed values                                                                                                                                                     |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `services/resident-support/demo-fixtures.ts`   | `services/resident-support/index.tsx` renders `summary`, `category`, and each `topics` item.                           | Long synthetic guidance explains that it wraps without hiding controls; topics include a fictional service request using general example information.               |
+| `services/permits/demo-fixtures.ts`            | `services/permits/index.tsx` renders the loading `message`, then each success option's `label` and `detail`.           | Generic loading text; long fictional weekday appointment labels and sample descriptions explicitly say no appointment is reserved or request sent.                  |
+| `services/community-services/demo-fixtures.ts` | `services/community-services/index.tsx` renders the error `message`, then each success service's `name` and `summary`. | Synthetic request failure message; long fictional learning and shared-space labels and summaries describe wrapping without claiming real listings or resident data. |
+| `consumer-fixtures/permits/demo-fixtures.ts`   | `consumer-fixtures/permits/index.tsx` renders each option's `label` and `detail` in the `PermitsSummary` status.       | Separate consumer-owned synthetic weekday example options and sample time-window details.                                                                           |
 
 These are separate service-owned fixtures, including the consumer fixture; the
 overlapping Permits examples are not sourced from a live service or shared
 request model. The checked-in declarations are explicitly marked
 synthetic-only. Tests exercise representative rendered text and accessible
 states; use `pnpm test` to verify those outcomes.
+
+## Responsive layout contract
+
+The shared viewport steps are narrow **320–639px**, intermediate **640–1023px**,
+and wide **1024px+**, governed by `responsive.breakpoint.compact` (`40rem`) and
+`responsive.breakpoint.wide` (`64rem`). Import semantic sizing through
+`@civicnest/design-tokens`; do not copy breakpoint values into a service
+stylesheet. Shared UI owns the reusable page gutters, card insets, content cap,
+minimum card width, and grid transitions. Each service team owns its page
+composition and service-content density, keeping long content within the
+shared card/grid constraints.
+
+This two-step layout is easier to govern and verify for independently released
+modules than an arbitrary device matrix. Fluid sizing inside the grid still
+uses available width; introducing more fluid breakpoints could better fit
+unusual pages but increases layout combinations and visual-regression risk.
+The [taxonomy guide](./design-token-taxonomy.md#responsive-layout-contract)
+documents exact token names, values, trade-offs, and CSS adapter ownership.
+
+The responsive tests render all three service modules with long synthetic
+guidance, appointment status, and resource summaries; they verify breakpoint
+parity with the tokens, reflow classes, status visibility, and operable actions.
+Run `pnpm test` for automated checks. Before release, inspect the app at 320px,
+768px, and 1280px widths and check horizontal overflow, text wrapping, control
+operation, and visible keyboard focus. JSDOM does not calculate browser layout
+geometry, so this browser check remains required.
+
+Browser verification on 2026-11-26 covered 320px, 375px, 639px, 640px,
+768px, 1023px, 1024px, and 1280px with long synthetic Permits and Community
+Services content expanded. No horizontal overflow or card/control clipping
+was observed; buttons remained within their cards and keyboard focus retained
+its visible 3px outline at each width. Detailed viewport measurements are in
+the [responsive contract record](./design-token-taxonomy.md#browser-verification-record).
 
 ## Dependency ranges, upgrades, and release evidence
 

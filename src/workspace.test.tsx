@@ -19,6 +19,7 @@ import { CommunityServicesModule } from "@civicnest/community-services";
 import { PermitsModule } from "@civicnest/permits";
 import { ResidentSupportModule } from "@civicnest/resident-support";
 import { ResidentSupportConsumerFixture } from "../consumer-fixtures/resident-support";
+import App from "./app/App";
 
 function contrastRatio(foreground: string, background: string): number {
   function luminance(color: string): number {
@@ -135,6 +136,10 @@ describe("governed workspace public APIs", () => {
     const focusPath: CivicNestSemanticTokenPath = "focus.ring.color";
     const warningPath: CivicNestSemanticTokenPath = "color.state.warning";
     const validationPath: CivicNestSemanticTokenPath = "color.validation.error";
+    const compactCardInset: CivicNestSemanticTokenPath =
+      "responsive.inset.cardCompact";
+    const wideCardInset: CivicNestSemanticTokenPath =
+      "responsive.inset.cardWide";
 
     expect(Object.keys(civicNestSemanticTokenTaxonomy)).toEqual([
       "color",
@@ -148,6 +153,14 @@ describe("governed workspace public APIs", () => {
     expect(focusPath).toBe("focus.ring.color");
     expect(warningPath).toBe("color.state.warning");
     expect(validationPath).toBe("color.validation.error");
+    expect(compactCardInset).toBe("responsive.inset.cardCompact");
+    expect(wideCardInset).toBe("responsive.inset.cardWide");
+    expect(civicNestSemanticTokenTaxonomy.responsive.inset.cardCompact).toBe(
+      "0.75rem",
+    );
+    expect(civicNestSemanticTokenTaxonomy.responsive.inset.cardWide).toBe(
+      "1.25rem",
+    );
     expect(civicNestSemanticTokenTaxonomy.color.emphasis.primary).toBe(
       civicNestSemanticTokens.colorEmphasis,
     );
@@ -270,7 +283,8 @@ describe("governed workspace public APIs", () => {
           id="example-value"
         />
         <p className="service-demo__field-error" id="example-value-error">
-          Enter an example value.
+          Enter a fictional example value using plain text; do not include
+          personal or real request information.
         </p>
       </ServiceCard>,
     );
@@ -278,10 +292,14 @@ describe("governed workspace public APIs", () => {
     const card = screen.getByRole("article", { name: "Example form" });
     const field = within(card).getByRole("textbox", { name: "Example value" });
     expect(field).toHaveAttribute("aria-invalid", "true");
-    expect(field).toHaveAccessibleDescription("Enter an example value.");
-    expect(within(card).getByText("Enter an example value.")).toHaveClass(
-      "service-demo__field-error",
+    expect(field).toHaveAccessibleDescription(
+      "Enter a fictional example value using plain text; do not include personal or real request information.",
     );
+    expect(
+      within(card).getByText(
+        /do not include personal or real request information/,
+      ),
+    ).toHaveClass("service-demo__field-error");
     expect(card).toHaveStyle({
       "--cn-color-validation-error-text":
         civicNestSemanticTokenTaxonomy.color.validation.error,
@@ -290,6 +308,69 @@ describe("governed workspace public APIs", () => {
       "--cn-color-validation-error-border":
         civicNestSemanticTokenTaxonomy.color.validation.errorBorder,
     });
+    expect(getStylesheetRule(".service-demo__field-error")).toContain(
+      "overflow-wrap: anywhere",
+    );
+  });
+
+  it("uses shared responsive tokens for narrow and wide service layouts", async () => {
+    const user = userEvent.setup();
+    const { responsive } = civicNestSemanticTokenTaxonomy;
+    const stylesheetRules = Array.from(document.styleSheets)
+      .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+      .map((rule) => rule.cssText);
+
+    expect(
+      stylesheetRules.some((rule) =>
+        rule.includes(`@media (min-width: ${responsive.breakpoint.compact})`),
+      ),
+    ).toBe(true);
+    expect(
+      stylesheetRules.some((rule) =>
+        rule.includes(`@media (min-width: ${responsive.breakpoint.wide})`),
+      ),
+    ).toBe(true);
+
+    render(<App appName="Synthetic responsive test" />);
+
+    const residentSupport = screen.getByRole("article", {
+      name: "Resident support",
+    });
+    const permits = screen.getByRole("article", { name: "Permits" });
+    const communityServices = screen.getByRole("article", {
+      name: "Community services",
+    });
+    const serviceList = screen.getByRole("region", {
+      name: "Available services",
+    });
+    expect(serviceList).toHaveClass("service-list");
+    expect(screen.getByRole("main")).toHaveStyle({
+      "--cn-responsive-content-max": responsive.sizing.contentMaxWidth,
+      "--cn-responsive-card-minimum": responsive.sizing.cardMinimum,
+    });
+    expect(residentSupport).toHaveStyle({
+      "--cn-responsive-card-inset-compact": responsive.inset.cardCompact,
+      "--cn-responsive-card-inset-wide": responsive.inset.cardWide,
+    });
+    expect(residentSupport).toHaveTextContent("without hiding nearby controls");
+
+    await user.click(
+      within(permits).getByRole("button", {
+        name: "Show sample appointment options",
+      }),
+    );
+    expect(within(permits).getByRole("status")).toHaveTextContent(
+      "does not reserve an appointment or send a request",
+    );
+
+    await user.click(
+      within(communityServices).getByRole("button", {
+        name: "Retry sample request",
+      }),
+    );
+    expect(within(communityServices).getByRole("status")).toHaveTextContent(
+      "without pushing actions outside the card",
+    );
   });
 
   it("preserves ServiceCard semantics and consumer interaction", async () => {

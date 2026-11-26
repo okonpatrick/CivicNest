@@ -19,12 +19,14 @@ export const communityServicesSuccessDemoFixture: CommunityServicesDemoFixture =
     status: "success",
     services: [
       {
-        name: "Community learning",
-        summary: "A synthetic example of a local learning resource.",
+        name: "Community learning and shared skills example",
+        summary:
+          "A synthetic example of a neighborhood learning resource with a longer description that wraps without pushing actions outside the card.",
       },
       {
         name: "Shared spaces",
-        summary: "A synthetic example of a neighborhood resource.",
+        summary:
+          "A fictional shared-space example with general information only; no real service listing or resident details are represented.",
       },
     ],
   };

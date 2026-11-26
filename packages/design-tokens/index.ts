@@ -57,6 +57,7 @@ const primitiveValues = {
     controlMinHeight: "2.75rem",
     contentMaxWidth: "64rem",
     radiusCard: "0.75rem",
+    cardMinimum: "16rem",
   },
   responsive: {
     compact: "40rem",
@@ -175,6 +176,16 @@ export interface CivicNestSemanticTokenTaxonomy {
     };
     readonly gutter: {
       readonly page: (typeof primitiveValues.spacing)[8];
+      readonly pageCompact: (typeof primitiveValues.spacing)[4];
+      readonly pageWide: (typeof primitiveValues.spacing)[8];
+    };
+    readonly inset: {
+      readonly cardCompact: (typeof primitiveValues.spacing)[3];
+      readonly cardWide: (typeof primitiveValues.spacing)[5];
+    };
+    readonly sizing: {
+      readonly cardMinimum: typeof primitiveValues.sizing.cardMinimum;
+      readonly contentMaxWidth: typeof primitiveValues.sizing.contentMaxWidth;
     };
   };
   readonly focus: {
@@ -307,6 +318,16 @@ export const civicNestSemanticTokenTaxonomy: CivicNestSemanticTokenTaxonomy = {
     },
     gutter: {
       page: primitiveValues.spacing[8],
+      pageCompact: primitiveValues.spacing[4],
+      pageWide: primitiveValues.spacing[8],
+    },
+    inset: {
+      cardCompact: primitiveValues.spacing[3],
+      cardWide: primitiveValues.spacing[5],
+    },
+    sizing: {
+      cardMinimum: primitiveValues.sizing.cardMinimum,
+      contentMaxWidth: primitiveValues.sizing.contentMaxWidth,
     },
   },
   focus: {
@@ -385,6 +406,12 @@ export type CivicNestSemanticTokenPath =
   | "responsive.breakpoint.compact"
   | "responsive.breakpoint.wide"
   | "responsive.gutter.page"
+  | "responsive.gutter.pageCompact"
+  | "responsive.gutter.pageWide"
+  | "responsive.inset.cardCompact"
+  | "responsive.inset.cardWide"
+  | "responsive.sizing.cardMinimum"
+  | "responsive.sizing.contentMaxWidth"
   | "focus.ring.color"
   | "focus.ring.width"
   | "focus.ring.offset"

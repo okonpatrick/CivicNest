@@ -23,7 +23,12 @@ export function ServiceCard({
     border: `1px solid ${civicNestSemanticTokenTaxonomy.color.border.emphasis}`,
     borderRadius: civicNestSemanticTokenTaxonomy.sizing.radius.card,
     color: civicNestSemanticTokenTaxonomy.color.text.primary,
-    padding: civicNestSemanticTokenTaxonomy.spacing.inset.card,
+    minWidth: 0,
+    overflowWrap: "anywhere",
+    "--cn-responsive-card-inset-compact":
+      civicNestSemanticTokenTaxonomy.responsive.inset.cardCompact,
+    "--cn-responsive-card-inset-wide":
+      civicNestSemanticTokenTaxonomy.responsive.inset.cardWide,
     "--cn-color-action-text": civicNestSemanticTokenTaxonomy.color.action.text,
     "--cn-color-action-surface":
       civicNestSemanticTokenTaxonomy.color.action.surface,

@@ -28,15 +28,15 @@ card and synthetic service modules. Add a token only for a demonstrated shared
 need, with an owner and reviewed semantic meaning; do not pre-build a complete
 design catalog.
 
-| Family             | Example paths                                                                                                                                                                                                                                                                                                                                  | Intended meaning                                                                                                  |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Color              | `color.text.primary`, `color.text.muted`, `color.surface.canvas`, `color.surface.card`, `color.action.text`, `color.action.surface`, `color.border.emphasis`, `color.state.success`, `color.state.successBorder`, `color.state.warning`, `color.state.warningBorder`, `color.state.error`, `color.state.errorBorder`, `color.validation.error` | Content, action, surface, border, status, and validation roles; names describe purpose, not hue or palette index. |
-| Typography         | `typography.family.body`, `typography.size.body`, `typography.size.heading`, `typography.weight.semibold`, `typography.lineHeight.body`                                                                                                                                                                                                        | Shared text family, scale, weight, and line-height roles.                                                         |
-| Spacing            | `spacing.inline.regular`, `spacing.stack.relaxed`, `spacing.inset.card`                                                                                                                                                                                                                                                                        | Distances by relationship and density, independent of primitive scale numbers.                                    |
-| Sizing             | `sizing.icon.default`, `sizing.control.minHeight`, `sizing.content.maxWidth`, `sizing.radius.card`                                                                                                                                                                                                                                             | Shared component and content dimensions.                                                                          |
-| Responsive layout  | `responsive.breakpoint.compact`, `responsive.breakpoint.wide`, `responsive.gutter.page`                                                                                                                                                                                                                                                        | Breakpoint and page-gutter roles for responsive composition.                                                      |
-| Focus              | `focus.ring.color`, `focus.ring.width`, `focus.ring.offset`                                                                                                                                                                                                                                                                                    | Visible keyboard focus indicator properties and contrast-tested supported surfaces.                               |
-| Interaction states | `interaction.hover.surface`, `interaction.active.surface`, `interaction.disabled.text`, `interaction.disabled.surface`                                                                                                                                                                                                                         | Distinct normal, hover, focus-visible, active, and disabled treatments. Disabled colors retain readable contrast. |
+| Family             | Example paths                                                                                                                                                                                                                                                                                                                                  | Intended meaning                                                                                                                |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Color              | `color.text.primary`, `color.text.muted`, `color.surface.canvas`, `color.surface.card`, `color.action.text`, `color.action.surface`, `color.border.emphasis`, `color.state.success`, `color.state.successBorder`, `color.state.warning`, `color.state.warningBorder`, `color.state.error`, `color.state.errorBorder`, `color.validation.error` | Content, action, surface, border, status, and validation roles; names describe purpose, not hue or palette index.               |
+| Typography         | `typography.family.body`, `typography.size.body`, `typography.size.heading`, `typography.weight.semibold`, `typography.lineHeight.body`                                                                                                                                                                                                        | Shared text family, scale, weight, and line-height roles.                                                                       |
+| Spacing            | `spacing.inline.regular`, `spacing.stack.relaxed`, `spacing.inset.card`                                                                                                                                                                                                                                                                        | Distances by relationship and density, independent of primitive scale numbers.                                                  |
+| Sizing             | `sizing.icon.default`, `sizing.control.minHeight`, `sizing.content.maxWidth`, `sizing.radius.card`                                                                                                                                                                                                                                             | Shared component and content dimensions.                                                                                        |
+| Responsive layout  | `responsive.breakpoint.compact`, `responsive.breakpoint.wide`, `responsive.gutter.pageCompact`, `responsive.gutter.pageWide`, `responsive.inset.cardCompact`, `responsive.inset.cardWide`, `responsive.sizing.cardMinimum`, `responsive.sizing.contentMaxWidth`                                                                                | Shared viewport steps, page gutters, card insets, minimum card width, and content cap. Service modules compose their own pages. |
+| Focus              | `focus.ring.color`, `focus.ring.width`, `focus.ring.offset`                                                                                                                                                                                                                                                                                    | Visible keyboard focus indicator properties and contrast-tested supported surfaces.                                             |
+| Interaction states | `interaction.hover.surface`, `interaction.active.surface`, `interaction.disabled.text`, `interaction.disabled.surface`                                                                                                                                                                                                                         | Distinct normal, hover, focus-visible, active, and disabled treatments. Disabled colors retain readable contrast.               |
 
 `CivicNestSemanticTokenTaxonomy` types the nested readonly shape.
 `CivicNestSemanticTokenPath` is the union of supported dotted leaf paths, and
@@ -117,3 +117,60 @@ semantic structure. Token definitions alone do not prove screen-reader
 behavior; rendered role, name, and state tests are separate compatibility
 evidence. The palette and aliases remain service-neutral and contain no
 business wording or request data.
+
+## Responsive layout contract
+
+The shared demonstration supports **narrow viewports from 320px to 639px**,
+**intermediate viewports from 640px to 1023px**, and **wide viewports from
+1024px upward**. The design tokens express the steps as
+`responsive.breakpoint.compact` (`40rem`) and
+`responsive.breakpoint.wide` (`64rem`) so implementation follows the user's
+root font size. Below 40rem, the page uses a 1rem gutter and cards use a
+0.75rem inset; at and above 40rem these become 2rem and 1.25rem. At 64rem, the
+shared service list switches to three equal columns. Content remains capped at
+64rem and each grid item has a 16rem preferred minimum that shrinks to the
+available width rather than causing horizontal scrolling.
+
+Token names describe layout roles, not device models: `breakpoint.compact` and
+`breakpoint.wide` govern shared viewport transitions;
+`gutter.pageCompact/pageWide` and `inset.cardCompact/cardWide` provide spacing
+values; `sizing.cardMinimum/contentMaxWidth` describe constraints. The
+`src/styles.css` responsive adapter is the single place that translates the
+breakpoints into CSS media rules (CSS media queries cannot consume custom
+properties); a contract test compares each media threshold to the public
+breakpoint token. Service modules consume the shared `ServiceCard` and
+portfolio layout, and must not copy breakpoint numbers or redefine shared
+card sizing. They retain ownership of page composition, content density, and
+service-specific responsive decisions inside those boundaries.
+
+The fixed two-step strategy is easier to document, govern, and test across
+independently released modules, and makes visual regression review predictable.
+Highly fluid rules can fit unusual content and intermediate widths more
+precisely, but add design and testing combinations and increase visual
+regression risk. The shared grid still uses fluid available-width sizing within
+the governed steps; only additional step changes are deliberately limited.
+
+The representative synthetic content intentionally includes long guidance,
+appointment labels, status descriptions, validation feedback, and resource
+summaries. Cards and text allow shrinking and wrapping, action controls keep a
+minimum operable height while allowing multi-line labels, and focus styling
+remains present at both steps. Verify with `pnpm test` and inspect the app at
+320px, 768px, and 1280px widths before release. Browser pixel geometry must
+be reviewed in a real browser; JSDOM tests verify token-to-CSS wiring and
+semantic behavior, not actual rendered widths.
+
+### Browser verification record
+
+On 2026-11-26, the synthetic app was checked in the integrated browser at
+320px, 375px, 639px, 640px, 768px, 1023px, 1024px, and 1280px. At every width,
+`document.documentElement.scrollWidth` was no greater than the viewport width,
+each service card's content width contained its scroll width, and every
+rendered action stayed within its card. The 320px view used one column, 639px
+and 768px used two, and 1023px through 1280px used three; the page gutter/card
+inset changed from 16px/12px below 40rem to 32px/20px at and above 40rem.
+The long Permits and Community Services success fixtures were opened before
+measurement to exercise the content wrap. Keyboard focus remained
+`:focus-visible` with a computed `rgb(24, 50, 41) solid 3px` outline at all
+checked widths. Tests also render a long fictional validation message with
+`aria-invalid`/`aria-describedby` and verify its wrap rule and accessible
+description.
