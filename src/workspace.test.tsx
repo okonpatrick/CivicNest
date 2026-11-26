@@ -1,7 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { civicNestTokens } from "@civicnest/design-tokens";
-import { ServiceCard } from "@civicnest/ui";
+import {
+  civicNestTokens,
+  type CivicNestTokenName,
+  type CivicNestTokenValue,
+} from "@civicnest/design-tokens";
+import { ServiceCard, type ServiceCardProps } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
 import { CommunityServicesModule } from "@civicnest/community-services";
 import { PermitsModule } from "@civicnest/permits";
@@ -9,16 +13,31 @@ import { ResidentSupportModule } from "@civicnest/resident-support";
 
 describe("governed workspace public APIs", () => {
   it("exports shared tokens, components, and service-neutral utilities", () => {
-    expect(civicNestTokens.colorAccent).toBe("#39765c");
+    const accentToken: CivicNestTokenName = "colorAccent";
+    const accentValue: CivicNestTokenValue = civicNestTokens[accentToken];
+    const cardProps: ServiceCardProps = {
+      title: "Example service",
+      description: "Synthetic example",
+    };
+
+    expect(Object.keys(civicNestTokens)).toEqual([
+      "colorAccent",
+      "colorSurface",
+      "colorText",
+      "radiusCard",
+      "spaceCard",
+    ]);
+    expect(accentValue).toBe("#39765c");
     expect(normalizeDisplayText("  local \n services  ")).toBe(
       "local services",
     );
+    expect(normalizeDisplayText(" \t\n ")).toBe("");
 
-    render(
-      <ServiceCard title="Example service" description="Synthetic example" />,
-    );
+    render(<ServiceCard {...cardProps} />);
 
-    expect(screen.getByRole("article")).toHaveStyle({
+    const card = screen.getByRole("article", { name: "Example service" });
+    expect(card).toHaveAccessibleDescription("Synthetic example");
+    expect(card).toHaveStyle({
       color: civicNestTokens.colorText,
     });
   });

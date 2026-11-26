@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { civicNestTokens } from "@civicnest/design-tokens";
 
-interface ServiceCardProps {
+export interface ServiceCardProps {
   title: string;
   description: string;
   children?: ReactNode;
@@ -12,8 +12,13 @@ export function ServiceCard({
   description,
   children,
 }: ServiceCardProps) {
+  const headingId = useId();
+  const descriptionId = useId();
+
   return (
     <article
+      aria-describedby={descriptionId}
+      aria-labelledby={headingId}
       style={{
         backgroundColor: civicNestTokens.colorSurface,
         border: `1px solid ${civicNestTokens.colorAccent}`,
@@ -22,8 +27,8 @@ export function ServiceCard({
         padding: civicNestTokens.spaceCard,
       }}
     >
-      <h2>{title}</h2>
-      <p>{description}</p>
+      <h2 id={headingId}>{title}</h2>
+      <p id={descriptionId}>{description}</p>
       {children}
     </article>
   );

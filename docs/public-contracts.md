@@ -19,11 +19,12 @@ ownership and dependency direction.
 ### Decision
 
 Keep the public surface small and intentional. Each shared package documents
-one supported entry point, such as `packages/ui/index.tsx`. Consumers import
-from that entry point only:
+one supported package-root import. Consumers import from that entry point only:
 
 ```ts
+import { civicNestTokens } from "@civicnest/design-tokens";
 import { ServiceCard } from "@civicnest/ui";
+import { normalizeDisplayText } from "@civicnest/utils";
 ```
 
 Do not treat internal paths (for example, `@civicnest/ui/internal`) as public.
@@ -32,6 +33,30 @@ it is deliberately exported at the package entry point and documented with
 its purpose, inputs, behavior, and compatibility expectations. Service modules
 may import these public APIs and stable shared contracts; shared packages
 remain independent of service modules.
+
+### Initial export contracts
+
+The following are the complete initial shared exports. The supported import
+paths are the package roots shown below; files under `packages/` are not
+supported consumer import paths.
+
+| Supported import           | Export                 | Intended use and input                                                                                                                          | Output or rendered behavior                                                                                                                                                                                               | Compatibility commitment and limitations                                                                                                                                                                                                                          |
+| -------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@civicnest/design-tokens` | `civicNestTokens`      | Read shared visual values by the documented semantic property names: `colorAccent`, `colorSurface`, `colorText`, `radiusCard`, and `spaceCard`. | A readonly object of string literal values. `colorAccent` is the shared accent emphasis; the other names denote the default surface, text, card radius, and card spacing.                                                 | Property names, value formats, and documented roles are stable. Consumers should use the role, not assume a token's exact literal value. These are starter values, not a complete theme or a guarantee of contrast for every combination.                         |
+| `@civicnest/design-tokens` | `CivicNestTokenName`   | Use as a TypeScript type when a consumer needs to store or accept one of the token property names.                                              | Union of the five `civicNestTokens` property names.                                                                                                                                                                       | Adding names is compatible; removing or changing a name is breaking. It does not validate values received from untyped runtime input.                                                                                                                             |
+| `@civicnest/design-tokens` | `CivicNestTokenValue`  | Use as a TypeScript type for a value read from the token object.                                                                                | Union of the current token string literal values.                                                                                                                                                                         | The type follows the current values; consumers should not encode literal values in place of token roles. It is not a general CSS value type.                                                                                                                      |
+| `@civicnest/ui`            | `ServiceCard`          | Render a non-interactive service-content container. Requires string `title` and `description`; optionally accepts React `children`.             | A styled semantic `<article>` with an `<h2>` title and paragraph description. Its accessible name comes from the title, and its accessible description comes from the description. Children render after the description. | These props, semantic elements, accessible name/description, and visual token roles are stable. The component does not provide service navigation, data, loading states, or an interactive control.                                                               |
+| `@civicnest/ui`            | `ServiceCardProps`     | Type a consumer's `ServiceCard` props: required `title: string`, required `description: string`, and optional `children?: ReactNode`.           | Describes the component's supported inputs; it intentionally does not expose internal styling or arbitrary article attributes.                                                                                            | Additive optional props may be compatible; changing required props or their meaning is breaking. It relies on React's public `ReactNode` type.                                                                                                                    |
+| `@civicnest/utils`         | `normalizeDisplayText` | Accept a string of display text.                                                                                                                | Returns the text with leading/trailing JavaScript whitespace removed and each internal run of JavaScript whitespace replaced with one ASCII space. Whitespace-only input returns an empty string.                         | The input and output remain strings and this normalization behavior is stable. It does not localize, alter punctuation, normalize Unicode composition, or enforce non-empty text; callers retain responsibility for validation and context-appropriate rendering. |
+
+#### Accessibility responsibilities
+
+`ServiceCard` supplies the article semantics and programmatically associates
+its heading and description. Consuming services remain responsible for
+providing meaningful, non-empty title and description text, placing the
+`<h2>` in a logical heading hierarchy, and ensuring any interactive children
+are independently keyboard-operable, named, and correctly focused. The card
+does not make child controls accessible automatically.
 
 For the current single-build workspace, modules are not independently
 published or versioned. If separately versioned package manifests are
@@ -117,18 +142,18 @@ first shared package is introduced:
   and migration notes; review supplements, but never replaces, automated
   checks.
 
-For the existing repository, `pnpm typecheck`, `pnpm test`, `pnpm lint`,
-`pnpm format:check`, and `pnpm build` are the available baseline gates. The
-package-specific consumer, token, and component contract tests become required
-alongside those gates when the corresponding real package is added; no empty
-package or publishing infrastructure is required now.
+The initial consumer contract test in `src/workspace.test.tsx` imports from
+the approved package roots, type-checks representative token and component
+types, and verifies the card's accessible name and description. Run
+`pnpm typecheck` and `pnpm test` for the targeted contract check. For broader
+validation, `pnpm lint`, `pnpm format:check`, and `pnpm build` are the
+repository's additional baseline gates. No deep-import paths or wildcard
+exports are configured for shared packages.
 
 ### Verification
 
-- Confirm each shared package has one documented public entry point and no
-  wildcard exposure of internal folders.
-- Check the versioning, deprecation, and breaking-change rules against the
-  token migration example above.
-- Confirm automated consumer, token, accessibility, and build-time checks are
-  required before a real package contract is adopted.
+- Check that each export in the initial export table is present only at its
+  documented package root and that no internal path is supported.
+- Run `pnpm typecheck` and `pnpm test` to verify consumer imports and
+  accessible component behavior.
 - Run `pnpm format:check` to verify this policy follows repository formatting.
