@@ -3,7 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import {
   civicNestSemanticTokens,
+  civicNestSemanticTokenTaxonomy,
   civicNestTokens,
+  type CivicNestSemanticTokenPath,
   type CivicNestSemanticTokenName,
   type CivicNestSemanticTokens,
   type CivicNestSemanticTokenValue,
@@ -91,6 +93,29 @@ describe("governed workspace public APIs", () => {
     });
   });
 
+  it("exposes typed semantic token families through the package root", () => {
+    const focusPath: CivicNestSemanticTokenPath = "focus.ring.color";
+
+    expect(Object.keys(civicNestSemanticTokenTaxonomy)).toEqual([
+      "color",
+      "typography",
+      "spacing",
+      "sizing",
+      "responsive",
+      "focus",
+      "interaction",
+    ]);
+    expect(focusPath).toBe("focus.ring.color");
+    expect(civicNestSemanticTokenTaxonomy.color.emphasis.primary).toBe(
+      civicNestSemanticTokens.colorEmphasis,
+    );
+    expect(civicNestSemanticTokenTaxonomy.focus.ring).toEqual({
+      color: "#183229",
+      width: "3px",
+      offset: "3px",
+    });
+  });
+
   it("preserves ServiceCard semantics and consumer interaction", async () => {
     const user = userEvent.setup();
     render(<ResidentSupportConsumerFixture />);
@@ -135,7 +160,7 @@ describe("governed workspace public APIs", () => {
     }
   });
 
-  it("preserves identical appearance and accessible behavior across migrated and unmigrated consumers", async () => {
+  it("preserves identical appearance and accessible behavior across service consumers", async () => {
     const user = userEvent.setup();
     render(
       <>

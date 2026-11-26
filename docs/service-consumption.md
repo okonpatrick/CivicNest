@@ -20,6 +20,8 @@ The [boundary check](./workspace-design.md#automated-dependency-boundary-check)
 rejects package deep imports, cross-service imports, and service dependencies
 from shared packages. The [public contract table](./public-contracts.md#initial-export-contracts)
 is the authority for supported names and behavior.
+For available semantic families and ownership rules, see the
+[design-token taxonomy](./design-token-taxonomy.md).
 
 Shared packages reduce duplicated maintenance and let platform owners improve
 accessible behavior consistently. The trade-off is that changes to shared
@@ -42,7 +44,7 @@ choose a route for `PermitsModule`, but the route and any request model remain
 the service/host's responsibility rather than becoming part of `ServiceCard`.
 
 ```tsx
-import { civicNestSemanticTokens } from "@civicnest/design-tokens";
+import { civicNestSemanticTokenTaxonomy } from "@civicnest/design-tokens";
 import { ServiceCard } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
 import { permitsSuccessDemoFixture } from "./demo-fixtures";
@@ -59,7 +61,12 @@ export function PermitsSummary() {
       title="Permits"
       description={normalizeDisplayText("Example permit appointment options.")}
     >
-      <p role="status" style={{ color: civicNestSemanticTokens.colorEmphasis }}>
+      <p
+        role="status"
+        style={{
+          color: civicNestSemanticTokenTaxonomy.color.emphasis.primary,
+        }}
+      >
         {message}
       </p>
     </ServiceCard>
@@ -77,10 +84,10 @@ through Testing Library. Do not treat styling as a substitute for meaning or
 accessible structure.
 
 The checked-in `services/permits/index.tsx` is a complete example with a
-service-local loading/success fixture and keyboard-operable action. It currently
-uses the deprecated `civicNestTokens.colorAccent` to demonstrate the supported
-compatibility window; new or migrating code should use
-`civicNestSemanticTokens.colorEmphasis`. See the
+service-local loading/success fixture and keyboard-operable action. It uses
+`civicNestSemanticTokenTaxonomy.color.emphasis.primary`, the preferred
+hierarchical semantic token. The migration guide documents the earlier flat
+alias and its deprecation window. See the
 [token migration guide](./deprecation-and-migration.md#implemented-example-coloraccent-to-coloremphasis).
 
 ## Dependency ranges, upgrades, and release evidence

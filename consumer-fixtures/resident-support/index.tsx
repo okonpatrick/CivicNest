@@ -1,12 +1,13 @@
 import { useState } from "react";
 import {
-  civicNestSemanticTokens,
-  type CivicNestSemanticTokenName,
+  civicNestSemanticTokenTaxonomy,
+  type CivicNestSemanticTokenTaxonomyValue,
 } from "@civicnest/design-tokens";
 import { ServiceCard, type ServiceCardProps } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
 
-const emphasisToken: CivicNestSemanticTokenName = "colorEmphasis";
+const emphasisColor: CivicNestSemanticTokenTaxonomyValue =
+  civicNestSemanticTokenTaxonomy.color.emphasis.primary;
 const cardProps: ServiceCardProps = {
   title: "Resident support example",
   description: normalizeDisplayText(" General example guidance. "),
@@ -21,10 +22,7 @@ export function ResidentSupportConsumerFixture() {
         Show support guidance
       </button>
       {requested ? (
-        <p
-          role="status"
-          style={{ color: civicNestSemanticTokens[emphasisToken] }}
-        >
+        <p role="status" style={{ color: emphasisColor }}>
           Example guidance is ready.
         </p>
       ) : null}
