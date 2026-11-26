@@ -22,17 +22,18 @@ falling back. See [configuration and synthetic data rules](./configuration-and-t
 
 ## Use the supported commands
 
-| Command             | Purpose                                      |
-| ------------------- | -------------------------------------------- |
-| `pnpm dev`          | Start the local Vite application             |
-| `pnpm typecheck`    | Run strict TypeScript checking               |
-| `pnpm lint`         | Run JavaScript/TypeScript ESLint rules       |
-| `pnpm test`         | Run Vitest and Testing Library tests         |
-| `pnpm format:check` | Check Prettier formatting without edits      |
-| `pnpm format`       | Apply Prettier formatting                    |
-| `pnpm build`        | Type-check and create production assets      |
-| `pnpm preview`      | Serve the last production build locally      |
-| `pnpm check`        | Run lint, tests, formatting check, and build |
+| Command             | Purpose                                                       |
+| ------------------- | ------------------------------------------------------------- |
+| `pnpm dev`          | Start the local Vite application                              |
+| `pnpm typecheck`    | Run strict TypeScript checking                                |
+| `pnpm lint`         | Run JavaScript/TypeScript ESLint rules                        |
+| `pnpm contracts`    | Verify documented exports and compile consumer fixtures       |
+| `pnpm test`         | Run Vitest and Testing Library tests                          |
+| `pnpm format:check` | Check Prettier formatting without edits                       |
+| `pnpm format`       | Apply Prettier formatting                                     |
+| `pnpm build`        | Type-check and create production assets                       |
+| `pnpm preview`      | Serve the last production build locally                       |
+| `pnpm check`        | Run lint, boundaries, contracts, tests, formatting, and build |
 
 Run `pnpm check` before requesting review. During early exploration, it can be
 advisory; before review or a release candidate, every check it runs is
@@ -65,6 +66,9 @@ respect the line endings of both LF and CRLF checkouts.
   policy](./public-contracts.md). New service interfaces must also follow the
   [non-functional requirements](./non-functional-requirements.md) and
   [release operations design](./release-operations.md).
+
+  For service-team onboarding, use the [service-consumption guide](./service-consumption.md)
+  for approved imports, worked examples, upgrades, rollback, and verification.
 
 ## Style the UI without leaking app styles
 
@@ -117,6 +121,12 @@ Before review:
 
 Never put credentials, environment files, resident information, or other
 secrets in Git history.
+For a shared-package contract change, use the [public contract and
+versioning policy](./public-contracts.md), follow the
+[deprecation and migration policy](./deprecation-and-migration.md) when retiring
+an existing export, complete a [release record](./release-record-template.md),
+and check the [illustrative example](./release-record-example.md). The current
+workspace does not independently publish shared packages.
 
 ## Troubleshooting
 

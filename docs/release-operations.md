@@ -36,6 +36,14 @@ policy](./public-contracts.md), plus coordinated adoption by affected
 consumers before the old contract is removed. Do not silently substitute a
 new shared-package version underneath independently deployed services.
 
+The current repository does not independently version or publish packages
+and has no registry or release automation configured. The version policy and
+[release-record template](./release-record-template.md) describe the evidence
+to require if that model is introduced; they are not claims that a package
+release or independent deployment can be performed today. See the
+[illustrative release record](./release-record-example.md) for a sample
+compatibility decision.
+
 The initial isolation boundary is a versioned service artifact loaded by a
 host that pins a compatible version. The host remains responsible for
 integration compatibility and a safe fallback if a module cannot load. This

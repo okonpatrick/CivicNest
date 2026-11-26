@@ -29,5 +29,11 @@
       "@civicnest/community-services": ["services/community-services/index.tsx"]
     }
   },
-  "include": ["src", "packages", "services", "vite.config.ts"]
+  "include": [
+    "src",
+    "packages",
+    "services",
+    "consumer-fixtures",
+    "vite.config.ts"
+  ]
 }

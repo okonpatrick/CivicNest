@@ -22,9 +22,15 @@ Keep the public surface small and intentional. Each shared package documents
 one supported package-root import. Consumers import from that entry point only:
 
 ```ts
-import { civicNestTokens } from "@civicnest/design-tokens";
+import {
+  civicNestSemanticTokens,
+  civicNestTokens,
+} from "@civicnest/design-tokens";
 import { ServiceCard } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
+
+const existingAccent = civicNestTokens.colorAccent;
+const replacementEmphasis = civicNestSemanticTokens.colorEmphasis;
 ```
 
 Do not treat internal paths (for example, `@civicnest/ui/internal`) as public.
@@ -40,14 +46,19 @@ The following are the complete initial shared exports. The supported import
 paths are the package roots shown below; files under `packages/` are not
 supported consumer import paths.
 
-| Supported import           | Export                 | Intended use and input                                                                                                                          | Output or rendered behavior                                                                                                                                                                                               | Compatibility commitment and limitations                                                                                                                                                                                                                          |
-| -------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@civicnest/design-tokens` | `civicNestTokens`      | Read shared visual values by the documented semantic property names: `colorAccent`, `colorSurface`, `colorText`, `radiusCard`, and `spaceCard`. | A readonly object of string literal values. `colorAccent` is the shared accent emphasis; the other names denote the default surface, text, card radius, and card spacing.                                                 | Property names, value formats, and documented roles are stable. Consumers should use the role, not assume a token's exact literal value. These are starter values, not a complete theme or a guarantee of contrast for every combination.                         |
-| `@civicnest/design-tokens` | `CivicNestTokenName`   | Use as a TypeScript type when a consumer needs to store or accept one of the token property names.                                              | Union of the five `civicNestTokens` property names.                                                                                                                                                                       | Adding names is compatible; removing or changing a name is breaking. It does not validate values received from untyped runtime input.                                                                                                                             |
-| `@civicnest/design-tokens` | `CivicNestTokenValue`  | Use as a TypeScript type for a value read from the token object.                                                                                | Union of the current token string literal values.                                                                                                                                                                         | The type follows the current values; consumers should not encode literal values in place of token roles. It is not a general CSS value type.                                                                                                                      |
-| `@civicnest/ui`            | `ServiceCard`          | Render a non-interactive service-content container. Requires string `title` and `description`; optionally accepts React `children`.             | A styled semantic `<article>` with an `<h2>` title and paragraph description. Its accessible name comes from the title, and its accessible description comes from the description. Children render after the description. | These props, semantic elements, accessible name/description, and visual token roles are stable. The component does not provide service navigation, data, loading states, or an interactive control.                                                               |
-| `@civicnest/ui`            | `ServiceCardProps`     | Type a consumer's `ServiceCard` props: required `title: string`, required `description: string`, and optional `children?: ReactNode`.           | Describes the component's supported inputs; it intentionally does not expose internal styling or arbitrary article attributes.                                                                                            | Additive optional props may be compatible; changing required props or their meaning is breaking. It relies on React's public `ReactNode` type.                                                                                                                    |
-| `@civicnest/utils`         | `normalizeDisplayText` | Accept a string of display text.                                                                                                                | Returns the text with leading/trailing JavaScript whitespace removed and each internal run of JavaScript whitespace replaced with one ASCII space. Whitespace-only input returns an empty string.                         | The input and output remain strings and this normalization behavior is stable. It does not localize, alter punctuation, normalize Unicode composition, or enforce non-empty text; callers retain responsibility for validation and context-appropriate rendering. |
+| Supported import           | Export                        | Intended use and input                                                                                                                                                              | Output or rendered behavior                                                                                                                                                                                               | Compatibility commitment and limitations                                                                                                                                                                                                                                                                                                                       |
+| -------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@civicnest/design-tokens` | `civicNestTokens`             | Read the original five shared visual values: deprecated `colorAccent`, `colorSurface`, `colorText`, `radiusCard`, `spaceCard`. Use `civicNestSemanticTokens` for new code.          | A readonly object whose five keys include deprecated `colorAccent` returning `"#39765c"` during its deprecation window via a dev-warning getter; the other four keys are stable.                                          | The original five-key shape and `CivicNestTokenName` union are preserved throughout the deprecation window so exhaustive consumers compile without change. `colorAccent` is scheduled for removal only in the next major version after migration is complete. These are starter values, not a complete theme or a guarantee of contrast for every combination. |
+| `@civicnest/design-tokens` | `CivicNestTokens`             | TypeScript interface describing the five-key `civicNestTokens` shape (with `@deprecated` JSDoc on `colorAccent`).                                                                   | Readonly interface with five properties; `colorAccent` is marked `@deprecated` and types-checks identically during the window.                                                                                            | The interface shape is unchanged from the pre-deprecation contract; exhaustive consumers of its keys continue to compile. Removing `colorAccent` from the interface is deferred to the next major version.                                                                                                                                                     |
+| `@civicnest/design-tokens` | `CivicNestTokenName`          | Use as a TypeScript type when a consumer needs to store or accept one of the original token property names.                                                                         | Union of the original five `civicNestTokens` property names (`colorAccent`, `colorSurface`, `colorText`, `radiusCard`, `spaceCard`). Unchanged from the pre-deprecation contract.                                         | The union is stable; exhaustive consumers of the five names compile without modification. Removing `colorAccent` from the union is a breaking change deferred to the next major version. It does not validate values received from untyped runtime input.                                                                                                      |
+| `@civicnest/design-tokens` | `CivicNestTokenValue`         | Use as a TypeScript type for a value read from `civicNestTokens`.                                                                                                                   | Union of the current token string literal values.                                                                                                                                                                         | The type follows the current values; consumers should not encode literal values in place of token roles. It is not a general CSS value type.                                                                                                                                                                                                                   |
+| `@civicnest/design-tokens` | `civicNestSemanticTokens`     | Read the replacement semantic token values: `colorEmphasis`, `colorSurface`, `colorText`, `radiusCard`, `spaceCard`. Prefer this over `civicNestTokens` for new and migrating code. | A readonly object of string literal values. `colorEmphasis` (`"#39765c"`) is the clearly-named accent emphasis token. Identical underlying values to `civicNestTokens`, with no deprecated keys.                          | Adding new semantic token names is compatible when exhaustive consumers of `CivicNestSemanticTokenName` are verified first. Removing or renaming an existing key is breaking.                                                                                                                                                                                  |
+| `@civicnest/design-tokens` | `CivicNestSemanticTokenName`  | Use as a TypeScript type for a property name from `civicNestSemanticTokens`.                                                                                                        | Union of the five semantic token names (`colorEmphasis`, `colorSurface`, `colorText`, `radiusCard`, `spaceCard`).                                                                                                         | A separate union from `CivicNestTokenName`; expanding it may affect exhaustive consumers and must be checked before merging.                                                                                                                                                                                                                                   |
+| `@civicnest/design-tokens` | `CivicNestSemanticTokenValue` | Use as a TypeScript type for a value read from `civicNestSemanticTokens`.                                                                                                           | Union of the current semantic token string literal values.                                                                                                                                                                | The type follows the current values; consumers should not encode literal values in place of token roles.                                                                                                                                                                                                                                                       |
+| `@civicnest/design-tokens` | `CivicNestSemanticTokens`     | Use as a TypeScript type for the complete `civicNestSemanticTokens` object.                                                                                                         | Readonly type inferred from the five semantic token properties.                                                                                                                                                           | The type tracks the semantic token object; changing or removing a property is subject to the same compatibility review as the value export.                                                                                                                                                                                                                    |
+| `@civicnest/ui`            | `ServiceCard`                 | Render a non-interactive service-content container. Requires string `title` and `description`; optionally accepts React `children`.                                                 | A styled semantic `<article>` with an `<h2>` title and paragraph description. Its accessible name comes from the title, and its accessible description comes from the description. Children render after the description. | These props, semantic elements, accessible name/description, and visual token roles are stable. The component does not provide service navigation, data, loading states, or an interactive control.                                                                                                                                                            |
+| `@civicnest/ui`            | `ServiceCardProps`            | Type a consumer's `ServiceCard` props: required `title: string`, required `description: string`, and optional `children?: ReactNode`.                                               | Describes the component's supported inputs; it intentionally does not expose internal styling or arbitrary article attributes.                                                                                            | Additive optional props may be compatible; changing required props or their meaning is breaking. It relies on React's public `ReactNode` type.                                                                                                                                                                                                                 |
+| `@civicnest/utils`         | `normalizeDisplayText`        | Accept a string of display text.                                                                                                                                                    | Returns the text with leading/trailing JavaScript whitespace removed and each internal run of JavaScript whitespace replaced with one ASCII space. Whitespace-only input returns an empty string.                         | The input and output remain strings and this normalization behavior is stable. It does not localize, alter punctuation, normalize Unicode composition, or enforce non-empty text; callers retain responsibility for validation and context-appropriate rendering.                                                                                              |
 
 #### Accessibility responsibilities
 
@@ -70,17 +81,57 @@ error semantics, accessible action names, keyboard operation, and visible
 keyboard focus; shared `ServiceCard` supplies only the documented article,
 heading, and description relationships.
 
-For the current single-build workspace, modules are not independently
-published or versioned. If separately versioned package manifests are
-introduced later, their versions are compatibility signals, not a promise of
-independent deployment. A change proposal states the affected package and its
-intended semantic-version impact. Apply Semantic Versioning to the public API:
+### Version policy and package dependencies
 
-| Change                       | Version impact | Examples                                                                                                                                                     |
-| ---------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Patch                        | Patch version  | Internal fix that preserves documented output, token meaning, and accessible behavior.                                                                       |
-| Backward-compatible addition | Minor version  | Add an optional component property, a new token, or a new utility export without changing existing defaults.                                                 |
-| Incompatible change          | Major version  | Remove or rename a public export/token, change a documented token's meaning, or alter required component behavior in a way existing consumers must adapt to. |
+The current single-build workspace does not independently publish or version
+its shared packages, and has no package registry or release automation
+configured. The rules below define the compatibility policy to use if
+independent package versions are introduced; they do not claim that publishing
+infrastructure exists. Each shared package receives and advances its own
+Semantic Versioning version. A release of one package does not change the
+version of another package unless that package's own public contract changes.
+Service-module versions are likewise independent of shared-package versions.
+
+Classify changes by their effect on consumers of the documented package-root
+entry points. Choose the highest impact that applies to any change in a
+release:
+
+| Change class | Version impact                                                                                                                                                                                                                                                                              | Public-contract examples                                                                                                                                                                                                                                                                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Patch        | Increment patch for a backward-compatible bug fix that restores documented behavior, or a correction to consumer-facing package documentation that does not change the API or behavior. An editorial correction to internal project documentation alone does not require a package release. | Fix a utility implementation to match its documented whitespace behavior; correct a typo in published usage instructions.                                                                                                                                                                                   |
+| Minor        | Increment minor for an opt-in, backward-compatible public addition that preserves existing defaults and valid consumer behavior.                                                                                                                                                            | Add a semantic token; add an optional component property; add an exported type or utility; add a documented package-root entry point. Type additions must still be checked for consumer source compatibility, such as exhaustive unions.                                                                    |
+| Major        | Increment major when an existing valid consumer must change code, configuration, or assumptions to build or retain the documented behavior.                                                                                                                                                 | Remove or rename a token, export, type, utility, or package entry point; make a prop required or narrow its accepted type; change documented utility behavior incompatibly; change a token's documented role/value format; or alter component semantics, defaults, accessibility, or behavior incompatibly. |
+
+An addition is minor only if it preserves existing consumer source
+compatibility. For example, expanding an exported union can break a consumer
+that exhaustively handles every member; if contract tests show that impact,
+classify the change as major or redesign the addition so existing consumers
+remain valid.
+
+Changing the literal value of a design token is not automatically breaking:
+the documented semantic role and format are the contract, not an undocumented
+literal. Treat a value change as a minor design update only when its role,
+format, contrast intent, and existing consumer behavior remain compatible.
+Changing those guarantees, or changing a component's existing default
+behavior, is major. A bug fix that restores the published contract is patch;
+an intentional change to that contract is classified by its compatibility
+impact, even if described as a fix.
+
+Services record a compatible dependency range for every shared package they
+consume in the service package manifest or, until such manifests exist, in
+the release record. For example, `@civicnest/design-tokens: ^1.3.0` declares
+acceptance of compatible stable 1.x releases starting at 1.3.0; it does not
+prove that a particular resolved release has been tested. Record the exact
+resolved package version used for verification and test the service against
+that version before adoption. Use a narrower range or exact pin when the
+service has not verified the broader range, and make pre-1.0 ranges explicit
+because their compatibility expectations differ. A major package release
+must not be adopted under an old-major range; affected services update their
+range and complete migration and compatibility checks before relying on it.
+
+Use the [release-record template](./release-record-template.md) for a
+proposed package release. The [example release record](./release-record-example.md)
+shows a compatible token addition and its version decision.
 
 ### Compatibility and deprecation
 
@@ -104,7 +155,10 @@ TypeScript symbols, with `@deprecated`. Keep the old API working for at least
 one full minor-release cycle and 90 days, whichever is longer, unless retaining
 it creates a material security or accessibility risk. Notify affected service
 owners and include a migration issue or checklist. Remove it only in a major
-version after the deprecation period and consumer review.
+version after the deprecation period and consumer review. See the full
+[deprecation and migration policy](./deprecation-and-migration.md) for ownership,
+emergency exception criteria, pre-removal evidence requirements, and the live
+`colorAccent` to `colorEmphasis` migration plan.
 
 A major change is justified only when the old contract cannot reasonably be
 maintained or safely extended, such as correcting a materially misleading
@@ -135,37 +189,73 @@ names resolve to the same value and that the replacement meets the design
 system's documented contrast requirement. Remove the alias only in a major
 release after the deprecation period and consumer review.
 
-### Verification requirements
+### Compatibility verification
 
-Protect contracts with executable checks, not release notes alone. When the
-first shared package is introduced:
+`pnpm contracts` runs `scripts/check-public-contracts.cjs` and type-checks
+`consumer-fixtures/` with `tsconfig.consumers.json`. The export check reads the
+documented package/export pairs in the table above and compares them with the
+actual TypeScript exports from each package root. It also checks that consumer
+fixtures use only the approved shared-package entry points and that every
+documented shared package is exercised. TypeScript then checks those fixtures
+with the workspace's strict compiler settings.
 
-- Add a consumer contract test that imports representative public symbols
-  from the package entry point and type-checks a minimal consumer. This catches
-  accidental export removal and invalid documented usage.
-- Run TypeScript checks and the production build against consumer imports.
-  Add a boundary check that rejects deep imports into package internals.
-- Test design tokens for required public names, documented aliases during
-  deprecation, and their specified semantic/contrast constraints.
-- Test shared components through user-observable behavior: accessible role
-  and name, keyboard interaction, focus, and announced state where applicable.
-  Avoid tests coupled only to private implementation details.
-- Require the package owner and affected consumers to review contract changes
-  and migration notes; review supplements, but never replaces, automated
-  checks.
+The fixtures are small downstream-style modules for Resident Support, Permits,
+and Community Services. Each imports tokens, `ServiceCard`, and
+`normalizeDisplayText` from `@civicnest/design-tokens`, `@civicnest/ui`, and
+`@civicnest/utils`; none imports a `packages/` implementation path. The
+fixtures compile against the currently checked-in package contracts and the
+dependency versions pinned by the workspace lockfile. Shared packages are not
+independently published yet, so there is no separate package-version range to
+resolve.
 
-The initial consumer contract test in `src/workspace.test.tsx` imports from
-the approved package roots, type-checks representative token and component
-types, and verifies the card's accessible name and description. Run
-`pnpm typecheck` and `pnpm test` for the targeted contract check. For broader
-validation, `pnpm lint`, `pnpm format:check`, and `pnpm build` are the
-repository's additional baseline gates. No deep-import paths or wildcard
-exports are configured for shared packages.
+The contract tests in `src/workspace.test.tsx` and the shared component test
+exercise package-root imports through Testing Library. They check a card's
+accessible article role, name and description, plus an action that reveals a
+status message. The tests assert user-observable contract behavior rather than
+private component structure.
+
+To prove the guard catches a breaking change before release:
+
+1. Temporarily remove or rename an export listed in the table, for example
+   `ServiceCard` in `packages/ui/index.tsx`.
+2. Run `pnpm contracts`. The export check must fail with
+   `@civicnest/ui is missing documented export "ServiceCard"`; if only its
+   props or type contract is broken, TypeScript must report the affected
+   consumer fixture and incompatible type.
+3. Restore the API or update the public contract and migration/versioning plan
+   intentionally. Re-run `pnpm contracts` and `pnpm check` before proceeding.
+
+This negative check was exercised on 2026-11-26 by temporarily renaming
+`ServiceCard` in `packages/ui/index.tsx`. `pnpm contracts` failed before
+type-checking with `@civicnest/ui is missing documented export "ServiceCard"`
+and identified the unlisted `ServiceCardBreakingChange`. The original export
+was restored immediately. The rerun passed with 11 documented exports across
+three shared packages, and `pnpm check` passed boundaries, all 13 tests in
+five files, formatting, type checks, and the production build.
+
+The command proves that documented names are exported, that representative
+consumers type-check through approved roots, and that covered accessible
+behaviors pass in the test environment. It cannot decide whether a token's
+meaning is still appropriate, a visual change creates regression risk, an
+interaction remains usable in every assistive technology/browser, or which
+release classification a proposal deserves. The package owner and affected
+service owners must review semantic token meaning and migration impact;
+accessibility review must assess semantic and keyboard effects; design review
+must assess visual/contrast risk; and release owners must classify the change
+under this policy. Automated results do not replace those human approvals.
+
+Run `pnpm contracts` for the targeted export/type guard and `pnpm check` for
+the complete release gate, including Testing Library behavior, boundaries,
+formatting, and production build. No deep-import paths or wildcard exports are
+configured for shared packages.
 
 ### Verification
 
 - Check that each export in the initial export table is present only at its
   documented package root and that no internal path is supported.
-- Run `pnpm typecheck` and `pnpm test` to verify consumer imports and
+- For a proposed release, check the version decision against the highest
+  applicable change class, and record each affected service's compatible
+  dependency range and tested resolved version.
+- Run `pnpm contracts` and `pnpm test` to verify consumer imports and
   accessible component behavior.
 - Run `pnpm format:check` to verify this policy follows repository formatting.
