@@ -161,6 +161,347 @@ their own state models, content, and synthetic fixtures; state classes use the
 shared card-provided semantic values rather than module-local color overrides.
 No token or UI implementation deep imports are used.
 
+### Source evidence snapshot
+
+The following is the complete shared demonstration stylesheet and the complete
+Permits and Community Services fixture source reviewed for this validation.
+These snapshots were checked against
+[`src/styles.css`](../src/styles.css),
+[`services/permits/demo-fixtures.ts`](../services/permits/demo-fixtures.ts),
+and
+[`services/community-services/demo-fixtures.ts`](../services/community-services/demo-fixtures.ts)
+at commit `fa1321a`. The linked source files are authoritative if they differ
+from this evidence copy.
+
+The stylesheet keeps request wording and data out of shared presentation.
+Permits' unadorned loading text inherits the card's primary text color and is
+communicated with `role="status"`; this is intentional neutral loading
+presentation. Warning, success, request error, field validation, action
+normal/hover/active/disabled, focus-visible, forced-colors, and responsive
+rules are shown below.
+
+#### Complete shared stylesheet: `src/styles.css`
+
+```css
+:root {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: #183229;
+  background: #f5f7f4;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.welcome {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  align-content: center;
+  justify-items: center;
+  padding: 2rem var(--cn-responsive-page-gutter-compact);
+  text-align: center;
+}
+
+.welcome__eyebrow {
+  margin: 0 0 0.75rem;
+  color: #39765c;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.welcome h1 {
+  margin: 0;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  letter-spacing: -0.06em;
+}
+
+.welcome__description {
+  max-width: 34rem;
+  margin: 1rem 0 0;
+  color: #53665d;
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.welcome__note {
+  margin: 0.75rem 0 0;
+  color: #53665d;
+  font-size: 0.9rem;
+}
+
+.service-list {
+  display: grid;
+  width: min(100%, var(--cn-responsive-content-max));
+  min-width: 0;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, var(--cn-responsive-card-minimum)), 1fr)
+  );
+  gap: 1rem;
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.service-card {
+  min-width: 0;
+  padding: var(--cn-responsive-card-inset-compact);
+  overflow-wrap: anywhere;
+}
+
+.service-card :where(p, li, strong, h2, h3) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.service-list h2 {
+  margin-top: 0;
+  color: #39765c;
+}
+
+.service-list h3 {
+  margin-bottom: 0.5rem;
+}
+
+.service-demo__status {
+  min-width: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.service-demo__status--success,
+.service-demo__status--warning,
+.service-demo__status--error {
+  padding: 0.5rem 0.75rem;
+  border-left: 0.25rem solid;
+}
+
+.service-demo__status--success {
+  border-left-color: var(--cn-color-success-border);
+  background: var(--cn-color-success-surface);
+  color: var(--cn-color-success-text);
+}
+
+.service-demo__status--warning {
+  border-left-color: var(--cn-color-warning-border);
+  background: var(--cn-color-warning-surface);
+  color: var(--cn-color-warning-text);
+}
+
+.service-demo__status--error,
+.service-demo__error {
+  padding: 0.75rem;
+  border-left: 0.25rem solid var(--cn-color-error-border);
+  background: var(--cn-color-error-surface);
+  color: var(--cn-color-error-text);
+  line-height: 1.5;
+}
+
+.service-card [aria-invalid="true"] {
+  border-color: var(--cn-color-validation-error-border);
+}
+
+.service-card input {
+  display: block;
+  width: 100%;
+  max-width: 32rem;
+  min-height: 2.75rem;
+  margin-block: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--cn-color-action-border);
+  border-radius: 0.25rem;
+  background: var(--cn-color-action-surface);
+  color: var(--cn-color-action-text);
+  font: inherit;
+}
+
+.service-demo__field-error {
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 0.25rem solid var(--cn-color-validation-error-border);
+  background: var(--cn-color-validation-error-surface);
+  color: var(--cn-color-validation-error-text);
+  overflow-wrap: anywhere;
+}
+
+.service-demo__action {
+  max-width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--cn-color-action-border);
+  border-radius: 0.4rem;
+  background: var(--cn-color-action-surface);
+  color: var(--cn-color-action-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.service-demo__action:not(:disabled):hover {
+  background: var(--cn-color-action-hover-surface);
+}
+
+.service-demo__action:not(:disabled):active {
+  background: var(--cn-color-action-active-surface);
+}
+
+.service-demo__action:disabled {
+  border-color: var(--cn-color-disabled-border);
+  background: var(--cn-color-disabled-surface);
+  color: var(--cn-color-disabled-text);
+  cursor: not-allowed;
+}
+
+.service-card :focus-visible {
+  outline: var(--cn-focus-ring-width) solid var(--cn-focus-ring-color);
+  outline-offset: var(--cn-focus-ring-offset);
+}
+
+@media (forced-colors: active) {
+  .service-card :focus-visible {
+    outline-color: CanvasText;
+  }
+}
+
+.startup-error {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.startup-error h1 {
+  color: #8b2e2e;
+}
+
+@media (min-width: 40rem) {
+  .welcome {
+    padding-inline: var(--cn-responsive-page-gutter-wide);
+  }
+
+  .service-card {
+    padding: var(--cn-responsive-card-inset-wide);
+  }
+}
+
+@media (min-width: 64rem) {
+  .service-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+```
+
+#### Complete Permits fixture: `services/permits/demo-fixtures.ts`
+
+```ts
+export interface PermitOptionDemoFixture {
+  label: string;
+  detail: string;
+}
+
+export type PermitsDemoFixture =
+  | { status: "loading"; message: string }
+  | { status: "success"; options: readonly PermitOptionDemoFixture[] };
+
+// Synthetic-only examples; never populate this fixture from permit requests.
+export const permitsLoadingDemoFixture: PermitsDemoFixture = {
+  status: "loading",
+  message: "Loading sample appointment options.",
+};
+
+export const permitsSuccessDemoFixture: PermitsDemoFixture = {
+  status: "success",
+  options: [
+    {
+      label: "Example option A: a fictional weekday morning appointment window",
+      detail:
+        "A synthetic example of available times; choosing this option does not reserve an appointment or send a request.",
+    },
+    {
+      label:
+        "Example option B: a fictional weekday afternoon appointment window",
+      detail:
+        "Another synthetic example with longer explanatory text that should wrap within a narrow card.",
+    },
+  ],
+};
+```
+
+#### Complete Community Services fixture: `services/community-services/demo-fixtures.ts`
+
+```ts
+export interface CommunityServiceDemoFixture {
+  name: string;
+  summary: string;
+}
+
+export type CommunityServicesDemoFixture =
+  | { status: "error"; message: string }
+  | { status: "success"; services: readonly CommunityServiceDemoFixture[] };
+
+// Synthetic-only examples; never populate this fixture from service records.
+export const communityServicesErrorDemoFixture: CommunityServicesDemoFixture = {
+  status: "error",
+  message:
+    "The synthetic sample request failed. Example services could not be loaded.",
+};
+
+export const communityServicesSuccessDemoFixture: CommunityServicesDemoFixture =
+  {
+    status: "success",
+    services: [
+      {
+        name: "Community learning and shared skills example",
+        summary:
+          "A synthetic example of a neighborhood learning resource with a longer description that wraps without pushing actions outside the card.",
+      },
+      {
+        name: "Shared spaces",
+        summary:
+          "A fictional shared-space example with general information only; no real service listing or resident details are represented.",
+      },
+    ],
+  };
+```
+
+#### Source-to-rendered-state trace
+
+| Source content                                                | Service rendering                                             | Shared presentation and semantics                                                                                                                                   |
+| ------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `permitsLoadingDemoFixture.message`                           | Permits renders the message while `status === "loading"`.     | `.service-demo__status` wraps long text; native text inherits `ServiceCard` primary foreground; `role="status"` announces the loading state.                        |
+| `permitsSuccessDemoFixture.options[].label/detail`            | Permits renders each label and detail in its success branch.  | `.service-demo__status--success` consumes the shared success text, surface, and border properties; `role="status"` and `aria-live="polite"` communicate the result. |
+| Permits sample-only caution wording                           | Rendered beside loading and success results.                  | `.service-demo__status--warning` consumes warning properties; `role="note"` preserves the explicit “not reserved” meaning in text.                                  |
+| `communityServicesErrorDemoFixture.message`                   | Community Services renders the message in its error branch.   | `.service-demo__error` consumes shared error text, surface, and border properties; `role="alert"` communicates failure.                                             |
+| `communityServicesSuccessDemoFixture.services[].name/summary` | Community Services renders each name and summary after retry. | `.service-demo__status--success` consumes shared success properties; `role="status"` and `aria-live="polite"` communicate recovery.                                 |
+
+Review found no conflicting token usage in these fixture consumers: both
+modules use the same public `ServiceCard` and the semantic class treatments
+above; fixtures contain only authored fictional labels, explanatory text, and
+local success/error states. No service request, resident identifier, address,
+real appointment, live listing, or production response is represented.
+
 The sample app represents all four request outcomes across the services:
 
 | Module             | Synthetic state(s)                   | Observable communication and action                                                                                                                                               |
