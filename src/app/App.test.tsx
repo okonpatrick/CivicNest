@@ -16,5 +16,14 @@ describe("App", () => {
     expect(
       screen.getByText(/discovering and connecting with local services/i),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Resident support" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Permits" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Community services" }),
+    ).toBeInTheDocument();
   });
 });

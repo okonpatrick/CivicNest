@@ -2,26 +2,27 @@
 
 ## Decision record
 
-- **Status:** Accepted for the initial federated frontend
+- **Status:** Accepted for the initial CivicNest frontend
 - **Decision date:** 2026-11-25
 - **Scope:** Source-code ownership and dependency direction; this does not
   select a deployment or runtime-federation platform.
 
 ### Context
 
-CivicNest starts as one React and TypeScript application built and served by
-Vite. The frontend is expected to grow into a platform where teams can own
-municipal-service modules and reuse stable platform capabilities. The initial
-workspace needs clear ownership and import rules without requiring projects,
-build tooling, or deployment infrastructure that do not yet exist.
+CivicNest is one React and TypeScript application built and served by Vite.
+Teams need clear ownership and import rules for municipal-service modules and
+reusable platform capabilities without requiring separate build tooling or
+deployment infrastructure.
 
 ### Decision
 
-Keep the current Vite application as the host and introduce directories only
-when there is real code to put in them. Organize application-owned composition
-in `src/app/`, feature-specific UI in `src/features/<feature>/`, reusable
-platform libraries in `packages/<package>/`, and independently owned
-service modules in `services/<service>/`.
+Keep the current Vite application as the host. Application-owned composition
+lives in `src/app/`, host-only UI in `src/features/<feature>/`, reusable
+platform libraries in `packages/<package>/`, and independently owned service
+modules in `services/<service>/`. The initial package topology now has
+`packages/design-tokens/`, `packages/ui/`, and `packages/utils/`, plus
+`services/resident-support/`, `services/permits/`, and
+`services/community-services/`.
 
 The host composes service modules through their documented public entry points.
 Service modules may import public APIs from shared packages, including stable
@@ -57,23 +58,25 @@ flowchart TB
     end
 
     subgraph sharedPackages["Shared platform packages — service-neutral"]
-        design["Design system<br/>packages/design-system/<br/>Frontend Platform team"]
-        utilities["Application utilities<br/>packages/app-utils/<br/>Frontend Platform team"]
+        tokens["Design tokens<br/>packages/design-tokens/<br/>Frontend Platform team"]
+        ui["React components<br/>packages/ui/<br/>Frontend Platform team"]
+        utilities["Utilities<br/>packages/utils/<br/>Frontend Platform team"]
         contracts["Stable shared contracts<br/>packages/contracts/ (when justified)<br/>Platform Contract Steward"]
     end
 
     host -->|"composes via documented public entry point"| resident
     host -->|"composes via documented public entry point"| permits
     host -->|"composes via documented public entry point"| community
-    host -->|"may consume public APIs"| design
+    host -->|"may consume public APIs"| ui
     host -->|"may consume public APIs"| utilities
-    resident -->|"may consume stable public APIs/contracts"| design
+    ui -->|"uses public tokens API"| tokens
+    resident -->|"may consume public component API"| ui
     resident -->|"may consume stable public APIs/contracts"| utilities
     resident -->|"may consume stable public APIs/contracts"| contracts
-    permits -->|"may consume stable public APIs/contracts"| design
+    permits -->|"may consume public component API"| ui
     permits -->|"may consume stable public APIs/contracts"| utilities
     permits -->|"may consume stable public APIs/contracts"| contracts
-    community -->|"may consume stable public APIs/contracts"| design
+    community -->|"may consume public component API"| ui
     community -->|"may consume stable public APIs/contracts"| utilities
     community -->|"may consume stable public APIs/contracts"| contracts
     sharedPackages -.->|"FORBIDDEN: no dependency on service behavior or data"| serviceModules
@@ -88,22 +91,23 @@ depend on service modules, even for types, test fixtures, or example payloads.
 
 `src/features/` remains the home for capabilities that are part of the current
 host application and do not need independent service-team ownership. The
-diagram describes the intended dependency direction when the future boundaries
-are introduced; it does not claim that empty `packages/` or `services/`
-projects already exist.
+diagram documents the implemented source dependency direction. The directories
+are source modules in the existing application; they are not separately
+published packages or independently deployed services.
 
 ### Boundary ownership and responsibilities
 
-| Boundary                                                             | Accountable owner role                               | Responsibility                                                                                                                   | Change approval and review                                                                                                                                                                      |
-| -------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Application host (`src/app/`)                                        | Frontend Platform team                               | Startup, navigation, configuration, and composition through service public entry points                                          | Frontend Platform team approves host changes; host/service integration changes are reviewed by the affected service owner.                                                                      |
-| Host feature (`src/features/<feature>/`)                             | Frontend Platform team, with capability contributors | Host-level UI and behavior without an independent service owner                                                                  | Frontend Platform team approves routine work; changes crossing into an owned service boundary require that service team's review.                                                               |
-| Shared design system (`packages/design-system/`, when justified)     | Frontend Platform team                               | Accessible shared tokens, primitives, and generic components; no service workflows, domain rules, or service-owned content       | Frontend Platform team approves routine changes and public API changes; affected package consumers review compatibility-impacting changes.                                                      |
-| Shared application utilities (`packages/app-utils/`, when justified) | Frontend Platform team                               | Service-neutral configuration, navigation primitives, error handling, and other genuinely cross-service application capabilities | Frontend Platform team approves routine changes and public API changes; affected consumers review compatibility-impacting changes.                                                              |
-| Shared contracts (`packages/contracts/`, when needed)                | Platform Contract Steward                            | Compatibility and review of stable concepts genuinely shared across services                                                     | Contract Steward approves additions and changes after affected service owners review compatibility; breaking changes require explicit approval from affected consumers.                         |
-| Resident support (`services/resident-support/`)                      | Resident Support Service team                        | Resident-support discovery and its service-owned assistance/request journey and domain rules                                     | Resident Support Service team approves routine behavior and service API changes; Frontend Platform team reviews host integration, and affected contract consumers review compatibility changes. |
-| Permits (`services/permits/`)                                        | Permits Service team                                 | Permit information, eligibility guidance, application workflow, and permit-specific status/domain rules                          | Permits Service team approves routine behavior and service API changes; Frontend Platform team reviews host integration, and affected contract consumers review compatibility changes.          |
-| Community services (`services/community-services/`)                  | Community Services team                              | Community-service discovery, categories, filtering, and service-specific presentation/data rules                                 | Community Services team approves routine behavior and service API changes; Frontend Platform team reviews host integration, and affected contract consumers review compatibility changes.       |
+| Boundary                                              | Accountable owner role                               | Responsibility                                                                                                               | Change approval and review                                                                                                                                                                      |
+| ----------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Application host (`src/app/`)                         | Frontend Platform team                               | Startup, navigation, configuration, and composition through service public entry points                                      | Frontend Platform team approves host changes; host/service integration changes are reviewed by the affected service owner.                                                                      |
+| Host feature (`src/features/<feature>/`)              | Frontend Platform team, with capability contributors | Host-level UI and behavior without an independent service owner                                                              | Frontend Platform team approves routine work; changes crossing into an owned service boundary require that service team's review.                                                               |
+| Shared design tokens (`packages/design-tokens/`)      | Frontend Platform team                               | Stable, service-neutral visual tokens consumed through `@civicnest/design-tokens`                                            | Frontend Platform team approves token and API changes; affected consumers review compatibility-impacting changes.                                                                               |
+| Shared React components (`packages/ui/`)              | Frontend Platform team                               | Generic accessible components consumed through `@civicnest/ui`; no service workflows, domain rules, or service-owned content | Frontend Platform team approves component and API changes; affected consumers review behavior and compatibility changes.                                                                        |
+| Shared utilities (`packages/utils/`)                  | Frontend Platform team                               | Small service-neutral helpers consumed through `@civicnest/utils`; no service-specific business rules                        | Frontend Platform team approves utility and API changes; affected consumers review compatibility-impacting changes.                                                                             |
+| Shared contracts (`packages/contracts/`, when needed) | Platform Contract Steward                            | Compatibility and review of stable concepts genuinely shared across services                                                 | Contract Steward approves additions and changes after affected service owners review compatibility; breaking changes require explicit approval from affected consumers.                         |
+| Resident support (`services/resident-support/`)       | Resident Support Service team                        | Resident-support discovery and its service-owned assistance/request journey and domain rules                                 | Resident Support Service team approves routine behavior and service API changes; Frontend Platform team reviews host integration, and affected contract consumers review compatibility changes. |
+| Permits (`services/permits/`)                         | Permits Service team                                 | Permit information, eligibility guidance, application workflow, and permit-specific status/domain rules                      | Permits Service team approves routine behavior and service API changes; Frontend Platform team reviews host integration, and affected contract consumers review compatibility changes.          |
+| Community services (`services/community-services/`)   | Community Services team                              | Community-service discovery, categories, filtering, and service-specific presentation/data rules                             | Community Services team approves routine behavior and service API changes; Frontend Platform team reviews host integration, and affected contract consumers review compatibility changes.       |
 
 The owning role is accountable for routine maintenance and approval; it is
 not a named individual. Each package or module publishes its supported entry
@@ -113,11 +117,11 @@ the platform.
 
 ### Alternatives considered
 
-| Boundary model                                                   | Reuse                                                                                                                                                                                               | Release independence                                                                             | Change risk                                                                                                                         | Operational complexity                                                                                                             |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| One undivided application                                        | Shared code is easy to reach, but unclear ownership encourages either broad coupling or duplicated components; duplicated accessibility fixes can drift.                                            | None; one application is released together.                                                      | Implicit boundaries let service changes leak across the app, while duplicated code can behave inconsistently.                       | Lowest initially: one Vite build and deployment.                                                                                   |
-| **Modular source boundaries in one Vite application (selected)** | Reuse stable design-system, utility, and contract APIs; keep service behavior local. Overly broad shared packages increase coordination cost, so promote only genuinely cross-service capabilities. | Modules have clear owners but are released with the host; independent releases are not promised. | Public APIs and owner reviews limit cross-service impact; one build and review-based boundaries do not provide automatic isolation. | Low and implementable now: retain the Vite build and root scripts without federation or an orchestrator.                           |
-| Independently deployed federated modules                         | Can share versioned platform APIs, but independently managed integrations may also duplicate capabilities.                                                                                          | Highest: services can ship on separate schedules.                                                | Runtime and version mismatches move risk to integration; failures need explicit ownership and monitoring.                           | Highest: remote loading, deployment coordination, compatibility, security, accessibility, and performance need dedicated controls. |
+| Boundary model                                                   | Reuse                                                                                                                                                                                                  | Release independence                                                                             | Change risk                                                                                                                         | Operational complexity                                                                                                             |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| One undivided application                                        | Shared code is easy to reach, but unclear ownership encourages either broad coupling or duplicated components; duplicated accessibility fixes can drift.                                               | None; one application is released together.                                                      | Implicit boundaries let service changes leak across the app, while duplicated code can behave inconsistently.                       | Lowest initially: one Vite build and deployment.                                                                                   |
+| **Modular source boundaries in one Vite application (selected)** | Reuse stable token, component, utility, and contract APIs; keep service behavior local. Overly broad shared packages increase coordination cost, so promote only genuinely cross-service capabilities. | Modules have clear owners but are released with the host; independent releases are not promised. | Public APIs and owner reviews limit cross-service impact; one build and review-based boundaries do not provide automatic isolation. | Low and implementable now: retain the Vite build and root scripts without federation or an orchestrator.                           |
+| Independently deployed federated modules                         | Can share versioned platform APIs, but independently managed integrations may also duplicate capabilities.                                                                                             | Highest: services can ship on separate schedules.                                                | Runtime and version mismatches move risk to integration; failures need explicit ownership and monitoring.                           | Highest: remote loading, deployment coordination, compatibility, security, accessibility, and performance need dedicated controls. |
 
 The selected model prioritizes clear ownership and dependency direction while
 avoiding infrastructure that does not yet solve a demonstrated problem. It
@@ -132,14 +136,23 @@ release independence the current stack does not provide.
 ## Current implementation
 
 The current application remains a single Vite project. `src/main.tsx` is its
-entry point; the UI shell and tests live in `src/app/`, shared styling in
-`src/styles.css`, and product-specific areas can be grouped under
-`src/features/`. The `packages/` and `services/` directories are future
-boundaries, not requirements to create placeholder projects.
+entry point; the UI shell and tests live in `src/app/`, app-level layout in
+`src/styles.css`, and host-only features can live under `src/features/`. The
+implemented shared package roots are `packages/design-tokens/index.ts`,
+`packages/ui/index.tsx`, and `packages/utils/index.ts`. Each representative
+service has an `index.tsx` public entry point under `services/`; the host
+renders each through its package alias. These are source boundaries in one
+build, not independently deployed artifacts.
 
-The TypeScript and lint configuration already includes `src/`, `packages/`,
-and `services/`, so the strict checks apply when those directories gain real
-modules. The root package scripts remain the common local quality gates.
+TypeScript and Vite map the explicit `@civicnest/*` public entry-point aliases
+to these files. Consumers use only those aliases; implementation subpaths are
+not mapped as supported imports. `packages/ui/` consumes tokens, and each
+service module consumes the public component and utility APIs. Shared packages
+have no service imports. The root package scripts remain the common local
+quality gates. Runtime federation and separate deployment remain deferred
+because a single host build is sufficient to prove import boundaries without
+the additional remote-loading, compatibility, security, and operational
+failure modes.
 
 ## Revisit triggers
 
@@ -150,7 +163,8 @@ Review this decision when any of the following becomes true:
   point.
 - Multiple buildable projects need dependency-aware orchestration or
   affected-project checks.
-- A service needs independent deployment or release cadence.
+- A service needs independent deployment or release cadence and the team can
+  operate and verify the resulting runtime boundary.
 
 Record the concrete consumers, ownership, import graph, compatibility and
 deployment requirements, quality/performance measurements, and migration
@@ -171,3 +185,5 @@ expectations, see the [shared package contract policy](./public-contracts.md).
 - Confirm the decision rule keeps service-specific behavior and synthetic
   request schemas out of shared packages. Run `pnpm format:check` to verify
   this record follows repository formatting.
+- Run `pnpm test` and `pnpm build` to verify that all three service consumers
+  resolve through their public aliases in the Vite and TypeScript builds.
