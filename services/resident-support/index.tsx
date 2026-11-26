@@ -13,7 +13,7 @@ export function ResidentSupportModule() {
         <h3 id="resident-support-topics">Support topics</h3>
         <p
           className="service-demo__status"
-          style={{ color: civicNestTokens.colorAccent }}
+          style={{ color: civicNestTokens.colorEmphasis }}
           role="status"
         >
           {normalizeDisplayText(residentSupportDemoFixture.summary)}

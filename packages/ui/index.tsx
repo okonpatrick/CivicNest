@@ -21,7 +21,7 @@ export function ServiceCard({
       aria-labelledby={headingId}
       style={{
         backgroundColor: civicNestTokens.colorSurface,
-        border: `1px solid ${civicNestTokens.colorAccent}`,
+        border: `1px solid ${civicNestTokens.colorEmphasis}`,
         borderRadius: civicNestTokens.radiusCard,
         color: civicNestTokens.colorText,
         padding: civicNestTokens.spaceCard,

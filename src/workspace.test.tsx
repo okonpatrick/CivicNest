@@ -1,9 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   civicNestTokens,
   type CivicNestTokenName,
+  type CivicNestTokens,
   type CivicNestTokenValue,
 } from "@civicnest/design-tokens";
 import { ServiceCard, type ServiceCardProps } from "@civicnest/ui";
@@ -14,21 +15,24 @@ import { ResidentSupportModule } from "@civicnest/resident-support";
 
 describe("governed workspace public APIs", () => {
   it("exports shared tokens, components, and service-neutral utilities", () => {
-    const accentToken: CivicNestTokenName = "colorAccent";
-    const accentValue: CivicNestTokenValue = civicNestTokens[accentToken];
+    const emphasisToken: CivicNestTokenName = "colorEmphasis";
+    const emphasisValue: CivicNestTokenValue = civicNestTokens[emphasisToken];
+    const tokenShape: CivicNestTokens = civicNestTokens;
     const cardProps: ServiceCardProps = {
       title: "Example service",
       description: "Synthetic example",
     };
 
-    expect(Object.keys(civicNestTokens)).toEqual([
+    expect(Object.keys(tokenShape)).toEqual([
       "colorAccent",
+      "colorEmphasis",
       "colorSurface",
       "colorText",
       "radiusCard",
       "spaceCard",
     ]);
-    expect(accentValue).toBe("#39765c");
+    expect(emphasisValue).toBe("#39765c");
+    expect(civicNestTokens.colorAccent).toBe(civicNestTokens.colorEmphasis);
     expect(normalizeDisplayText("  local \n services  ")).toBe(
       "local services",
     );
@@ -39,8 +43,65 @@ describe("governed workspace public APIs", () => {
     const card = screen.getByRole("article", { name: "Example service" });
     expect(card).toHaveAccessibleDescription("Synthetic example");
     expect(card).toHaveStyle({
+      borderColor: civicNestTokens.colorEmphasis,
       color: civicNestTokens.colorText,
     });
+  });
+
+  it("warns once in dev when reading deprecated colorAccent and keeps replacement silent", async () => {
+    vi.resetModules();
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const { civicNestTokens: freshTokens } =
+        await import("@civicnest/design-tokens");
+
+      expect(freshTokens.colorEmphasis).toBe("#39765c");
+      expect(warnSpy).not.toHaveBeenCalled();
+
+      expect(freshTokens.colorAccent).toBe("#39765c");
+      expect(freshTokens.colorAccent).toBe("#39765c");
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("colorAccent"),
+      );
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("colorEmphasis"),
+      );
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it("preserves identical appearance and accessible behavior across migrated and unmigrated consumers", async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <ResidentSupportModule />
+        <PermitsModule />
+      </>,
+    );
+
+    const residentSupport = screen.getByRole("article", {
+      name: "Resident support",
+    });
+    const migratedStatus = within(residentSupport).getByRole("status");
+    expect(migratedStatus).toHaveStyle({
+      color: civicNestTokens.colorEmphasis,
+    });
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Show sample appointment options",
+      }),
+    );
+
+    const permits = screen.getByRole("article", { name: "Permits" });
+    const unmigratedStatus = within(permits).getByRole("status");
+    expect(unmigratedStatus).toHaveStyle({
+      color: civicNestTokens.colorEmphasis,
+    });
+    expect(unmigratedStatus).toHaveTextContent("Example option A");
   });
 
   it("renders independent service content and loading, success, and error states", () => {
