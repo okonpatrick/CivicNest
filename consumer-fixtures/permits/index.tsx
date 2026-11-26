@@ -1,21 +1,22 @@
-import {
-  civicNestTokens,
-  type CivicNestTokenName,
-} from "@civicnest/design-tokens";
-import { ServiceCard, type ServiceCardProps } from "@civicnest/ui";
+import { civicNestSemanticTokens } from "@civicnest/design-tokens";
+import { ServiceCard } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
+import { permitsSuccessDemoFixture } from "./demo-fixtures";
 
-const legacyAccentToken: CivicNestTokenName = "colorAccent";
-const cardProps: ServiceCardProps = {
-  title: "Permits example",
-  description: normalizeDisplayText(" Example appointment options. "),
-};
+export function PermitsSummary() {
+  const message = normalizeDisplayText(
+    permitsSuccessDemoFixture.options
+      .map((option) => `${option.label}: ${option.detail}`)
+      .join(". "),
+  );
 
-export function PermitsConsumerFixture() {
   return (
-    <ServiceCard {...cardProps}>
-      <p style={{ color: civicNestTokens[legacyAccentToken] }}>
-        Example appointment options are available.
+    <ServiceCard
+      title="Permits"
+      description={normalizeDisplayText("Example permit appointment options.")}
+    >
+      <p role="status" style={{ color: civicNestSemanticTokens.colorEmphasis }}>
+        {message}
       </p>
     </ServiceCard>
   );

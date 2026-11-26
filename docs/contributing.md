@@ -67,6 +67,9 @@ respect the line endings of both LF and CRLF checkouts.
   [non-functional requirements](./non-functional-requirements.md) and
   [release operations design](./release-operations.md).
 
+  For service-team onboarding, use the [service-consumption guide](./service-consumption.md)
+  for approved imports, worked examples, upgrades, rollback, and verification.
+
 ## Style the UI without leaking app styles
 
 `src/styles.css` is the app shell's global stylesheet. Limit it to document
