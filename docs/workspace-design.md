@@ -210,12 +210,21 @@ build, not independently deployed artifacts.
 TypeScript and Vite map the explicit `@civicnest/*` public entry-point aliases
 to these files. Consumers use only those aliases; implementation subpaths are
 not mapped as supported imports. `packages/ui/` consumes tokens, and each
-service module consumes the public component and utility APIs. Shared packages
-have no service imports. The root package scripts remain the common local
-quality gates. Runtime federation and separate deployment remain deferred
-because a single host build is sufficient to prove import boundaries without
-the additional remote-loading, compatibility, security, and operational
-failure modes.
+service module consumes the public token, component, and utility APIs. Shared
+packages have no service imports. The root package scripts remain the common
+local quality gates. Runtime federation and separate deployment remain
+deferred because a single host build is sufficient to prove import boundaries
+without the additional remote-loading, compatibility, security, and
+operational failure modes.
+
+The cross-package consumption demonstration gives each service local,
+typed synthetic fixtures and a focused UI fragment: resident support starts
+with guidance available, permits starts in a loading state and can reveal
+sample options, and community services starts with an identified sample-request
+failure and can recover to example listings. Actions only update local demo
+state; they do not call a service or represent real appointment availability.
+The Testing Library consumer test imports modules through their public
+`@civicnest/*` roots and verifies status, error, and keyboard recovery behavior.
 
 ## Revisit triggers
 

@@ -58,6 +58,18 @@ providing meaningful, non-empty title and description text, placing the
 are independently keyboard-operable, named, and correctly focused. The card
 does not make child controls accessible automatically.
 
+### Cross-package demonstration decision
+
+The service demonstration consumes the existing public `ServiceCard`, token,
+and text-normalization APIs from each approved package root. The current card
+contract is sufficient for these independently owned fragments, so the
+demonstration does not add a service-specific status, error, fixture, or action
+export to a shared package. Each service retains its own typed synthetic data
+and loading/recovery behavior. Services remain responsible for status and
+error semantics, accessible action names, keyboard operation, and visible
+keyboard focus; shared `ServiceCard` supplies only the documented article,
+heading, and description relationships.
+
 For the current single-build workspace, modules are not independently
 published or versioned. If separately versioned package manifests are
 introduced later, their versions are compatibility signals, not a promise of
