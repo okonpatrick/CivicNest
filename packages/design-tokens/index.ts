@@ -5,15 +5,23 @@ const primitiveValues = {
     neutral: {
       0: "#ffffff",
       50: "#f5f7f4",
+      100: "#e0e5e1",
       600: "#53665d",
       900: "#183229",
     },
     green: {
+      25: "#eaf5ee",
       50: "#edf5f0",
+      100: "#dcebe1",
       700: "#39765c",
+    },
+    warning: {
+      50: "#fff5d6",
+      800: "#684500",
     },
     red: {
       50: "#fff4f3",
+      600: "#8b2e2e",
       700: "#702424",
     },
   },
@@ -75,17 +83,41 @@ export interface CivicNestSemanticTokenTaxonomy {
       readonly canvas: (typeof primitiveValues.color.neutral)[50];
       readonly card: (typeof primitiveValues.color.neutral)[0];
       readonly interactiveHover: (typeof primitiveValues.color.green)[50];
+      readonly interactiveActive: (typeof primitiveValues.color.green)[100];
+      readonly disabled: (typeof primitiveValues.color.neutral)[100];
+    };
+    readonly action: {
+      readonly text: (typeof primitiveValues.color.neutral)[900];
+      readonly surface: (typeof primitiveValues.color.neutral)[0];
+      readonly border: (typeof primitiveValues.color.green)[700];
     };
     readonly emphasis: {
       readonly primary: (typeof primitiveValues.color.green)[700];
     };
     readonly border: {
+      readonly subtle: (typeof primitiveValues.color.neutral)[600];
       readonly emphasis: (typeof primitiveValues.color.green)[700];
     };
     readonly state: {
       readonly success: (typeof primitiveValues.color.green)[700];
+      readonly successSurface: (typeof primitiveValues.color.green)[25];
+      readonly successBorder: (typeof primitiveValues.color.green)[700];
+      readonly warning: (typeof primitiveValues.color.warning)[800];
+      readonly warningSurface: (typeof primitiveValues.color.warning)[50];
+      readonly warningBorder: (typeof primitiveValues.color.warning)[800];
       readonly error: (typeof primitiveValues.color.red)[700];
       readonly errorSurface: (typeof primitiveValues.color.red)[50];
+      readonly errorBorder: (typeof primitiveValues.color.red)[600];
+    };
+    readonly disabled: {
+      readonly text: (typeof primitiveValues.color.neutral)[600];
+      readonly surface: (typeof primitiveValues.color.neutral)[100];
+      readonly border: (typeof primitiveValues.color.neutral)[600];
+    };
+    readonly validation: {
+      readonly error: (typeof primitiveValues.color.red)[700];
+      readonly errorSurface: (typeof primitiveValues.color.red)[50];
+      readonly errorBorder: (typeof primitiveValues.color.red)[600];
     };
   };
   readonly typography: {
@@ -154,13 +186,16 @@ export interface CivicNestSemanticTokenTaxonomy {
   };
   readonly interaction: {
     readonly hover: {
-      readonly surface: "#edf5f0";
+      readonly surface: (typeof primitiveValues.color.green)[50];
+    };
+    readonly active: {
+      readonly surface: (typeof primitiveValues.color.green)[100];
+      readonly opacity: typeof primitiveValues.opacity.active;
     };
     readonly disabled: {
       readonly opacity: typeof primitiveValues.opacity.disabled;
-    };
-    readonly active: {
-      readonly opacity: typeof primitiveValues.opacity.active;
+      readonly text: (typeof primitiveValues.color.neutral)[600];
+      readonly surface: (typeof primitiveValues.color.neutral)[100];
     };
   };
 }
@@ -180,17 +215,41 @@ export const civicNestSemanticTokenTaxonomy: CivicNestSemanticTokenTaxonomy = {
       canvas: primitiveValues.color.neutral[50],
       card: primitiveValues.color.neutral[0],
       interactiveHover: primitiveValues.color.green[50],
+      interactiveActive: primitiveValues.color.green[100],
+      disabled: primitiveValues.color.neutral[100],
+    },
+    action: {
+      text: primitiveValues.color.neutral[900],
+      surface: primitiveValues.color.neutral[0],
+      border: primitiveValues.color.green[700],
     },
     emphasis: {
       primary: primitiveValues.color.green[700],
     },
     border: {
+      subtle: primitiveValues.color.neutral[600],
       emphasis: primitiveValues.color.green[700],
     },
     state: {
       success: primitiveValues.color.green[700],
+      successSurface: primitiveValues.color.green[25],
+      successBorder: primitiveValues.color.green[700],
+      warning: primitiveValues.color.warning[800],
+      warningSurface: primitiveValues.color.warning[50],
+      warningBorder: primitiveValues.color.warning[800],
       error: primitiveValues.color.red[700],
       errorSurface: primitiveValues.color.red[50],
+      errorBorder: primitiveValues.color.red[600],
+    },
+    disabled: {
+      text: primitiveValues.color.neutral[600],
+      surface: primitiveValues.color.neutral[100],
+      border: primitiveValues.color.neutral[600],
+    },
+    validation: {
+      error: primitiveValues.color.red[700],
+      errorSurface: primitiveValues.color.red[50],
+      errorBorder: primitiveValues.color.red[600],
     },
   },
   typography: {
@@ -261,11 +320,14 @@ export const civicNestSemanticTokenTaxonomy: CivicNestSemanticTokenTaxonomy = {
     hover: {
       surface: primitiveValues.color.green[50],
     },
+    active: {
+      surface: primitiveValues.color.green[100],
+      opacity: primitiveValues.opacity.active,
+    },
     disabled: {
       opacity: primitiveValues.opacity.disabled,
-    },
-    active: {
-      opacity: primitiveValues.opacity.active,
+      text: primitiveValues.color.neutral[600],
+      surface: primitiveValues.color.neutral[100],
     },
   },
 };
@@ -277,11 +339,29 @@ export type CivicNestSemanticTokenPath =
   | "color.surface.canvas"
   | "color.surface.card"
   | "color.surface.interactiveHover"
+  | "color.surface.interactiveActive"
+  | "color.surface.disabled"
+  | "color.action.text"
+  | "color.action.surface"
+  | "color.action.border"
   | "color.emphasis.primary"
+  | "color.border.subtle"
   | "color.border.emphasis"
   | "color.state.success"
+  | "color.state.successSurface"
+  | "color.state.successBorder"
+  | "color.state.warning"
+  | "color.state.warningSurface"
+  | "color.state.warningBorder"
   | "color.state.error"
   | "color.state.errorSurface"
+  | "color.state.errorBorder"
+  | "color.disabled.text"
+  | "color.disabled.surface"
+  | "color.disabled.border"
+  | "color.validation.error"
+  | "color.validation.errorSurface"
+  | "color.validation.errorBorder"
   | "typography.family.body"
   | "typography.size.caption"
   | "typography.size.body"
@@ -309,7 +389,10 @@ export type CivicNestSemanticTokenPath =
   | "focus.ring.width"
   | "focus.ring.offset"
   | "interaction.hover.surface"
+  | "interaction.active.surface"
   | "interaction.disabled.opacity"
+  | "interaction.disabled.text"
+  | "interaction.disabled.surface"
   | "interaction.active.opacity";
 
 export type CivicNestSemanticTokenTaxonomyValue =

@@ -273,38 +273,39 @@ The following checks were performed for the deprecation example on
 | Production build                                                       | `pnpm build`                        | Passed — 39 modules                                                                                                                                                          |
 
 Latest full verification on 2026-11-26: `pnpm check` passed lint, dependency
-boundaries (21 source files), all 12 tests in 5 files, formatting, TypeScript,
+boundaries (21 source files), all 17 tests in 5 files, formatting, TypeScript,
 and the 39-module production build. Standalone `pnpm typecheck` also passed.
 
 #### Keyboard focus and visible focus indicator
 
-The `.service-demo__action:focus-visible` rule in `src/styles.css` defines the
-visible focus indicator for all service action buttons:
+The `.service-card :focus-visible` rule in `src/styles.css` defines the visible
+focus indicator for controls inside the shared card. `ServiceCard` supplies
+focus token values through inherited CSS custom properties:
 
 ```css
-.service-demo__action:focus-visible {
-  outline: 3px solid #183229;
-  outline-offset: 3px;
+.service-card :focus-visible {
+  outline: var(--cn-focus-ring-width) solid var(--cn-focus-ring-color);
+  outline-offset: var(--cn-focus-ring-offset);
 }
 ```
 
 Measured properties:
 
-- **Outline color:** `#183229` (dark teal)
+- **Outline color:** `#183229` (`focus.ring.color`)
 - **Outline style:** `solid`
-- **Outline width:** `3px`
-- **Outline offset:** `3px` (indicator is not clipped by the element border)
+- **Outline width/offset:** `3px` / `3px` (`focus.ring.width` /
+  `focus.ring.offset`; indicator is not clipped by the card)
 - **Contrast of `#183229` outline against white card surface (`#ffffff`):**
   13.75:1 (above the 3:1 minimum for non-text focus indicators in WCAG 2.2
   SC 2.4.11)
+- **Contrast on action hover and active surfaces:** 12.39:1 and 11.14:1.
 - **Obstruction:** None — action buttons are not inside a sticky or clipping
   container
 
-The class `.service-demo__action` is assigned to the
-`PermitsModule` and `CommunityServicesModule` action buttons. The automated
-keyboard test verifies focus moves to the expected controls; browser keyboard
-verification below confirms the outline is visible while a control has
-`:focus-visible`.
+The automated keyboard test tabs to the Permits action, verifies it receives
+focus, and confirms the stylesheet binds a solid outline to the documented
+focus-token values. Browser inspection remains necessary to verify actual
+rendering in supported browsers, high-contrast mode, and zoom.
 
 | Keyboard check                                                                       | Automated test                                            | Result                                                                                                |
 | ------------------------------------------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -318,9 +319,10 @@ Both migrated (`ResidentSupportModule`) and unmigrated (`PermitsModule`,
 accessible roles and names, keyboard operation, focus indicator class, and
 status/alert semantics throughout the deprecation window.
 
-#### Manual browser keyboard check
+#### Prior manual browser keyboard check
 
-On 2026-11-26, the Vite app was opened in the integrated browser. Pressing Tab
+On 2026-11-26, before semantic visual-state tokens were wired to the shared
+card, the Vite app was opened in the integrated browser. Pressing Tab
 focused "Show sample appointment options"; its active element matched
 `:focus-visible` and computed outline was `rgb(24, 50, 41) solid 3px` with a
 `3px` offset. Pressing Enter updated the permit status and moved focus to
@@ -330,4 +332,6 @@ replaced the community-services alert with the service status and moved focus
 to "Refresh community services", again with the visible outline. The migrated
 Resident Support, Permits, and Community Services now consume the semantic
 taxonomy while preserving accessible names, descriptions, headings, and
-status/alert semantics.
+status/alert semantics. This is historical browser evidence, not a manual
+inspection of the current CSS-variable wiring; repeat the browser check before
+release as noted above.

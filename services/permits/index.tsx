@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { civicNestSemanticTokenTaxonomy } from "@civicnest/design-tokens";
 import { ServiceCard } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
 import {
@@ -20,16 +19,19 @@ export function PermitsModule() {
     >
       <section aria-labelledby="permits-options-heading">
         <h3 id="permits-options-heading">Appointment options</h3>
+        <p
+          className="service-demo__status service-demo__status--warning"
+          role="note"
+        >
+          Sample options only; no appointment is reserved.
+        </p>
         {fixture.status === "loading" ? (
           <p className="service-demo__status" role="status">
             {fixture.message}
           </p>
         ) : (
           <div
-            className="service-demo__status"
-            style={{
-              color: civicNestSemanticTokenTaxonomy.color.emphasis.primary,
-            }}
+            className="service-demo__status service-demo__status--success"
             role="status"
             aria-live="polite"
           >

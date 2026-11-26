@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { civicNestSemanticTokenTaxonomy } from "@civicnest/design-tokens";
 import { ServiceCard } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
 import {
@@ -26,10 +25,7 @@ export function CommunityServicesModule() {
           </p>
         ) : (
           <div
-            className="service-demo__status"
-            style={{
-              color: civicNestSemanticTokenTaxonomy.color.emphasis.primary,
-            }}
+            className="service-demo__status service-demo__status--success"
             role="status"
             aria-live="polite"
           >

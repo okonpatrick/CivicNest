@@ -28,15 +28,15 @@ card and synthetic service modules. Add a token only for a demonstrated shared
 need, with an owner and reviewed semantic meaning; do not pre-build a complete
 design catalog.
 
-| Family             | Example paths                                                                                                                                                                         | Intended meaning                                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Color              | `color.text.primary`, `color.text.muted`, `color.surface.canvas`, `color.surface.card`, `color.emphasis.primary`, `color.border.emphasis`, `color.state.success`, `color.state.error` | Foreground, surface, emphasis, border, and state roles; names describe purpose, not hue or palette index.             |
-| Typography         | `typography.family.body`, `typography.size.body`, `typography.size.heading`, `typography.weight.semibold`, `typography.lineHeight.body`                                               | Shared text family, scale, weight, and line-height roles.                                                             |
-| Spacing            | `spacing.inline.regular`, `spacing.stack.relaxed`, `spacing.inset.card`                                                                                                               | Distances by relationship and density, independent of primitive scale numbers.                                        |
-| Sizing             | `sizing.icon.default`, `sizing.control.minHeight`, `sizing.content.maxWidth`, `sizing.radius.card`                                                                                    | Shared component and content dimensions.                                                                              |
-| Responsive layout  | `responsive.breakpoint.compact`, `responsive.breakpoint.wide`, `responsive.gutter.page`                                                                                               | Breakpoint and page-gutter roles for responsive composition.                                                          |
-| Focus              | `focus.ring.color`, `focus.ring.width`, `focus.ring.offset`                                                                                                                           | Visible keyboard focus indicator properties.                                                                          |
-| Interaction states | `interaction.hover.surface`, `interaction.disabled.opacity`, `interaction.active.opacity`                                                                                             | Shared visual response to pointer and control states. These do not replace disabled semantics or state announcements. |
+| Family             | Example paths                                                                                                                                                                                                                                                                                                                                  | Intended meaning                                                                                                  |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Color              | `color.text.primary`, `color.text.muted`, `color.surface.canvas`, `color.surface.card`, `color.action.text`, `color.action.surface`, `color.border.emphasis`, `color.state.success`, `color.state.successBorder`, `color.state.warning`, `color.state.warningBorder`, `color.state.error`, `color.state.errorBorder`, `color.validation.error` | Content, action, surface, border, status, and validation roles; names describe purpose, not hue or palette index. |
+| Typography         | `typography.family.body`, `typography.size.body`, `typography.size.heading`, `typography.weight.semibold`, `typography.lineHeight.body`                                                                                                                                                                                                        | Shared text family, scale, weight, and line-height roles.                                                         |
+| Spacing            | `spacing.inline.regular`, `spacing.stack.relaxed`, `spacing.inset.card`                                                                                                                                                                                                                                                                        | Distances by relationship and density, independent of primitive scale numbers.                                    |
+| Sizing             | `sizing.icon.default`, `sizing.control.minHeight`, `sizing.content.maxWidth`, `sizing.radius.card`                                                                                                                                                                                                                                             | Shared component and content dimensions.                                                                          |
+| Responsive layout  | `responsive.breakpoint.compact`, `responsive.breakpoint.wide`, `responsive.gutter.page`                                                                                                                                                                                                                                                        | Breakpoint and page-gutter roles for responsive composition.                                                      |
+| Focus              | `focus.ring.color`, `focus.ring.width`, `focus.ring.offset`                                                                                                                                                                                                                                                                                    | Visible keyboard focus indicator properties and contrast-tested supported surfaces.                               |
+| Interaction states | `interaction.hover.surface`, `interaction.active.surface`, `interaction.disabled.text`, `interaction.disabled.surface`                                                                                                                                                                                                                         | Distinct normal, hover, focus-visible, active, and disabled treatments. Disabled colors retain readable contrast. |
 
 `CivicNestSemanticTokenTaxonomy` types the nested readonly shape.
 `CivicNestSemanticTokenPath` is the union of supported dotted leaf paths, and
@@ -69,3 +69,51 @@ breaking contract change and follows the
 and [deprecation](./deprecation-and-migration.md) policies. Verify public
 exports and representative consumers with `pnpm contracts`; run `pnpm check`
 before review.
+
+## Accessible visual states and contrast
+
+The visual system targets **WCAG 2.2 Level AA** for its supported component
+combinations; this token-level target is not a claim that the whole application
+or every consumer is certified. Normal text is designed for at least 4.5:1
+contrast (SC 1.4.3). Control boundaries and state graphics target at least
+3:1 against adjacent colors (SC 1.4.11). Keyboard focus uses a solid 3 CSS-pixel
+outline with a 3-pixel offset, exceeding the 2-pixel perimeter area in the
+minimum focus appearance criterion, and has at least 3:1 contrast against
+each supported action surface (SC 2.4.11).
+
+Ratios below use the WCAG sRGB relative-luminance formula and the foreground
+and adjacent background named in each row. The same calculation is exercised
+by the `meets documented text, state, border, and focus contrast thresholds`
+test in `src/workspace.test.tsx`.
+
+| Use                           | Foreground / indicator | Intended surface                         |                  Contrast | Expectation                                                                       |
+| ----------------------------- | ---------------------- | ---------------------------------------- | ------------------------: | --------------------------------------------------------------------------------- |
+| Primary text and action label | `#183229`              | Card/action white `#ffffff`              |                   13.75:1 | 4.5:1 minimum                                                                     |
+| Muted text                    | `#53665d`              | White `#ffffff`                          |                    6.13:1 | 4.5:1 minimum                                                                     |
+| Action border                 | `#39765c`              | White `#ffffff`                          |                    5.36:1 | 3:1 minimum                                                                       |
+| Action label and border       | `#183229` / `#39765c`  | Hover `#edf5f0`                          |          12.39:1 / 4.83:1 | 4.5:1 text / 3:1 boundary                                                         |
+| Action label and border       | `#183229` / `#39765c`  | Active `#dcebe1`                         |          11.14:1 / 4.34:1 | 4.5:1 text / 3:1 boundary                                                         |
+| Disabled action text          | `#53665d`              | Disabled surface `#e0e5e1`               |                    4.81:1 | Kept readable, although disabled controls are exempt from these contrast criteria |
+| Success text/border           | `#39765c`              | Success surface `#eaf5ee`                |                    4.79:1 | 4.5:1 text / 3:1 boundary                                                         |
+| Warning text/border           | `#684500`              | Warning surface `#fff5d6`                |                    7.90:1 | 4.5:1 text / 3:1 boundary                                                         |
+| Error status text/border      | `#702424` / `#8b2e2e`  | Error surface `#fff4f3`                  |           9.91:1 / 7.71:1 | 4.5:1 text / 3:1 boundary                                                         |
+| Validation text/border        | `#702424` / `#8b2e2e`  | Validation surface `#fff4f3`             |           9.91:1 / 7.71:1 | 4.5:1 text / 3:1 boundary                                                         |
+| Focus outline                 | `#183229`              | White, hover `#edf5f0`, active `#dcebe1` | 13.75:1, 12.39:1, 11.14:1 | At least 3:1 on each                                                              |
+
+`ServiceCard` supplies the semantic token values as CSS custom properties to
+its content. Shared service action styles use separate normal, hover, active,
+disabled, and `:focus-visible` rules; no reset removes the outline. A
+forced-colors rule allows the system `CanvasText` focus color. Tests tab to a
+service action and check that the focused control has a solid 3-pixel outline.
+Visual review is still required in supported browsers, including high-contrast
+mode and zoom.
+
+Status color is supplementary, never the only cue: success and loading use
+visible text in a `role="status"` region, failures use readable text in a
+`role="alert"` region, validation consumers must associate an error message
+with its field using `aria-invalid` and `aria-describedby`, and cautionary
+content retains its wording with note semantics. Icons may reinforce a state but must not replace its text or
+semantic structure. Token definitions alone do not prove screen-reader
+behavior; rendered role, name, and state tests are separate compatibility
+evidence. The palette and aliases remain service-neutral and contain no
+business wording or request data.

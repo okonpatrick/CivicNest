@@ -44,7 +44,6 @@ choose a route for `PermitsModule`, but the route and any request model remain
 the service/host's responsibility rather than becoming part of `ServiceCard`.
 
 ```tsx
-import { civicNestSemanticTokenTaxonomy } from "@civicnest/design-tokens";
 import { ServiceCard } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
 import { permitsSuccessDemoFixture } from "./demo-fixtures";
@@ -62,10 +61,8 @@ export function PermitsSummary() {
       description={normalizeDisplayText("Example permit appointment options.")}
     >
       <p
+        className="service-demo__status service-demo__status--success"
         role="status"
-        style={{
-          color: civicNestSemanticTokenTaxonomy.color.emphasis.primary,
-        }}
       >
         {message}
       </p>
@@ -82,6 +79,13 @@ the state machine and copy in the service module, expose native keyboard
 controls and appropriate `status`/`alert` semantics, and verify those states
 through Testing Library. Do not treat styling as a substitute for meaning or
 accessible structure.
+
+The Permits module also shows an explicit `role="note"` warning that its
+options are samples and are not reserved. Status, warning, and error treatments
+use readable text and semantic structure in addition to their colors. The
+token package documents its WCAG 2.2 AA design target and measured contrast
+for supported state surfaces in the
+[semantic token taxonomy](./design-token-taxonomy.md#accessible-visual-states-and-contrast).
 
 The checked-in `services/permits/index.tsx` is a complete example with a
 service-local loading/success fixture and keyboard-operable action. It uses

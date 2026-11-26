@@ -20,6 +20,44 @@ import { PermitsModule } from "@civicnest/permits";
 import { ResidentSupportModule } from "@civicnest/resident-support";
 import { ResidentSupportConsumerFixture } from "../consumer-fixtures/resident-support";
 
+function contrastRatio(foreground: string, background: string): number {
+  function luminance(color: string): number {
+    const channels = color.match(/[0-9a-f]{2}/gi);
+
+    if (!channels || channels.length !== 3) {
+      throw new Error(`Expected a six-digit hex color, received ${color}.`);
+    }
+
+    const linearChannel = (channel: string | undefined) => {
+      if (!channel) {
+        throw new Error(`Missing color channel in ${color}.`);
+      }
+
+      const value = Number.parseInt(channel, 16) / 255;
+      return value <= 0.04045
+        ? value / 12.92
+        : ((value + 0.055) / 1.055) ** 2.4;
+    };
+
+    return (
+      0.2126 * linearChannel(channels[0]) +
+      0.7152 * linearChannel(channels[1]) +
+      0.0722 * linearChannel(channels[2])
+    );
+  }
+
+  const first = luminance(foreground);
+  const second = luminance(background);
+  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+}
+
+function getStylesheetRule(selector: string): string | undefined {
+  return Array.from(document.styleSheets)
+    .flatMap((styleSheet) => Array.from(styleSheet.cssRules))
+    .map((rule) => rule.cssText)
+    .find((rule) => rule.includes(selector));
+}
+
 function assertUnreachableToken(token: never): never {
   throw new Error(`Unexpected token name: ${String(token)}`);
 }
@@ -95,6 +133,8 @@ describe("governed workspace public APIs", () => {
 
   it("exposes typed semantic token families through the package root", () => {
     const focusPath: CivicNestSemanticTokenPath = "focus.ring.color";
+    const warningPath: CivicNestSemanticTokenPath = "color.state.warning";
+    const validationPath: CivicNestSemanticTokenPath = "color.validation.error";
 
     expect(Object.keys(civicNestSemanticTokenTaxonomy)).toEqual([
       "color",
@@ -106,6 +146,8 @@ describe("governed workspace public APIs", () => {
       "interaction",
     ]);
     expect(focusPath).toBe("focus.ring.color");
+    expect(warningPath).toBe("color.state.warning");
+    expect(validationPath).toBe("color.validation.error");
     expect(civicNestSemanticTokenTaxonomy.color.emphasis.primary).toBe(
       civicNestSemanticTokens.colorEmphasis,
     );
@@ -113,6 +155,140 @@ describe("governed workspace public APIs", () => {
       color: "#183229",
       width: "3px",
       offset: "3px",
+    });
+  });
+
+  it("meets documented text, state, border, and focus contrast thresholds", () => {
+    const { color, focus, interaction } = civicNestSemanticTokenTaxonomy;
+
+    expect(
+      contrastRatio(color.text.primary, color.surface.card),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(color.action.text, color.action.surface),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(color.action.text, interaction.hover.surface),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(color.action.text, interaction.active.surface),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(color.disabled.text, color.disabled.surface),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(color.state.success, color.state.successSurface),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(color.state.successBorder, color.state.successSurface),
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      contrastRatio(color.state.warning, color.state.warningSurface),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(color.state.warningBorder, color.state.warningSurface),
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      contrastRatio(color.state.error, color.state.errorSurface),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(color.action.border, color.action.surface),
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      contrastRatio(color.action.border, interaction.hover.surface),
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      contrastRatio(color.action.border, interaction.active.surface),
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      contrastRatio(
+        color.validation.errorBorder,
+        color.validation.errorSurface,
+      ),
+    ).toBeGreaterThanOrEqual(3);
+    expect(color.action.surface).not.toBe(interaction.hover.surface);
+    expect(color.action.surface).not.toBe(interaction.active.surface);
+    expect(color.action.surface).not.toBe(color.disabled.surface);
+    expect(interaction.active.surface).not.toBe(interaction.hover.surface);
+
+    for (const surface of [
+      color.action.surface,
+      interaction.hover.surface,
+      interaction.active.surface,
+    ]) {
+      expect(contrastRatio(focus.ring.color, surface)).toBeGreaterThanOrEqual(
+        3,
+      );
+    }
+  });
+
+  it("uses the semantic disabled treatment on shared action controls", () => {
+    render(
+      <ServiceCard
+        title="Example action"
+        description="Synthetic disabled state"
+      >
+        <button className="service-demo__action" disabled type="button">
+          Temporarily unavailable
+        </button>
+      </ServiceCard>,
+    );
+
+    const card = screen.getByRole("article", { name: "Example action" });
+    expect(
+      within(card).getByRole("button", { name: "Temporarily unavailable" }),
+    ).toBeDisabled();
+    expect(card).toHaveStyle({
+      "--cn-color-disabled-text":
+        civicNestSemanticTokenTaxonomy.color.disabled.text,
+      "--cn-color-disabled-surface":
+        civicNestSemanticTokenTaxonomy.color.disabled.surface,
+      "--cn-color-disabled-border":
+        civicNestSemanticTokenTaxonomy.color.disabled.border,
+    });
+    expect(getStylesheetRule(".service-demo__action:disabled")).toContain(
+      "var(--cn-color-disabled-surface)",
+    );
+    expect(
+      getStylesheetRule(".service-demo__action:not(:disabled):hover"),
+    ).toContain("var(--cn-color-action-hover-surface)");
+    expect(
+      getStylesheetRule(".service-demo__action:not(:disabled):active"),
+    ).toContain("var(--cn-color-action-active-surface)");
+  });
+
+  it("associates readable validation feedback with its field", () => {
+    render(
+      <ServiceCard
+        title="Example form"
+        description="Synthetic validation state"
+      >
+        <label htmlFor="example-value">Example value</label>
+        <input
+          aria-describedby="example-value-error"
+          aria-invalid="true"
+          id="example-value"
+        />
+        <p className="service-demo__field-error" id="example-value-error">
+          Enter an example value.
+        </p>
+      </ServiceCard>,
+    );
+
+    const card = screen.getByRole("article", { name: "Example form" });
+    const field = within(card).getByRole("textbox", { name: "Example value" });
+    expect(field).toHaveAttribute("aria-invalid", "true");
+    expect(field).toHaveAccessibleDescription("Enter an example value.");
+    expect(within(card).getByText("Enter an example value.")).toHaveClass(
+      "service-demo__field-error",
+    );
+    expect(card).toHaveStyle({
+      "--cn-color-validation-error-text":
+        civicNestSemanticTokenTaxonomy.color.validation.error,
+      "--cn-color-validation-error-surface":
+        civicNestSemanticTokenTaxonomy.color.validation.errorSurface,
+      "--cn-color-validation-error-border":
+        civicNestSemanticTokenTaxonomy.color.validation.errorBorder,
     });
   });
 
@@ -185,8 +361,10 @@ describe("governed workspace public APIs", () => {
 
     const permits = screen.getByRole("article", { name: "Permits" });
     const unmigratedStatus = within(permits).getByRole("status");
-    expect(unmigratedStatus).toHaveStyle({
-      color: civicNestSemanticTokens.colorEmphasis,
+    expect(unmigratedStatus).toHaveClass("service-demo__status--success");
+    expect(permits).toHaveStyle({
+      "--cn-color-success-text":
+        civicNestSemanticTokenTaxonomy.color.state.success,
     });
     expect(unmigratedStatus).toHaveTextContent("Example option A");
   });
@@ -245,9 +423,30 @@ describe("governed workspace public APIs", () => {
       name: "Show sample appointment options",
     });
     expect(action).toHaveFocus();
+    const focusRule = getStylesheetRule(".service-card :focus-visible");
+    expect(focusRule).toContain("outline:");
+    expect(focusRule).toContain("var(--cn-focus-ring-width)");
+    expect(focusRule).toContain("var(--cn-focus-ring-color)");
+    const permits = screen.getByRole("article", { name: "Permits" });
+    expect(permits).toHaveStyle({
+      "--cn-focus-ring-color": civicNestSemanticTokenTaxonomy.focus.ring.color,
+      "--cn-focus-ring-width": civicNestSemanticTokenTaxonomy.focus.ring.width,
+      "--cn-focus-ring-offset":
+        civicNestSemanticTokenTaxonomy.focus.ring.offset,
+    });
+    const note = within(permits).getByRole("note");
+    expect(note).toHaveTextContent(
+      "Sample options only; no appointment is reserved.",
+    );
+    expect(note).toHaveClass("service-demo__status--warning");
+    expect(permits).toHaveStyle({
+      "--cn-color-warning-text":
+        civicNestSemanticTokenTaxonomy.color.state.warning,
+      "--cn-color-warning-border":
+        civicNestSemanticTokenTaxonomy.color.state.warningBorder,
+    });
     await user.keyboard("{Enter}");
 
-    const permits = screen.getByRole("article", { name: "Permits" });
     expect(within(permits).getByRole("status")).toHaveTextContent(
       "Example option A",
     );
@@ -267,7 +466,18 @@ describe("governed workspace public APIs", () => {
     const communityServices = screen.getByRole("article", {
       name: "Community services",
     });
-    expect(within(communityServices).getByRole("alert")).toBeInTheDocument();
+    const errorMessage = within(communityServices).getByRole("alert");
+    expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage).toHaveTextContent(
+      "The synthetic sample request failed.",
+    );
+    expect(communityServices).toHaveStyle({
+      "--cn-color-error-text": civicNestSemanticTokenTaxonomy.color.state.error,
+      "--cn-color-error-surface":
+        civicNestSemanticTokenTaxonomy.color.state.errorSurface,
+      "--cn-color-error-border":
+        civicNestSemanticTokenTaxonomy.color.state.errorBorder,
+    });
     await user.click(
       within(communityServices).getByRole("button", {
         name: "Retry sample request",
