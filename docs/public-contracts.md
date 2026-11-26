@@ -70,17 +70,57 @@ error semantics, accessible action names, keyboard operation, and visible
 keyboard focus; shared `ServiceCard` supplies only the documented article,
 heading, and description relationships.
 
-For the current single-build workspace, modules are not independently
-published or versioned. If separately versioned package manifests are
-introduced later, their versions are compatibility signals, not a promise of
-independent deployment. A change proposal states the affected package and its
-intended semantic-version impact. Apply Semantic Versioning to the public API:
+### Version policy and package dependencies
 
-| Change                       | Version impact | Examples                                                                                                                                                     |
-| ---------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Patch                        | Patch version  | Internal fix that preserves documented output, token meaning, and accessible behavior.                                                                       |
-| Backward-compatible addition | Minor version  | Add an optional component property, a new token, or a new utility export without changing existing defaults.                                                 |
-| Incompatible change          | Major version  | Remove or rename a public export/token, change a documented token's meaning, or alter required component behavior in a way existing consumers must adapt to. |
+The current single-build workspace does not independently publish or version
+its shared packages, and has no package registry or release automation
+configured. The rules below define the compatibility policy to use if
+independent package versions are introduced; they do not claim that publishing
+infrastructure exists. Each shared package receives and advances its own
+Semantic Versioning version. A release of one package does not change the
+version of another package unless that package's own public contract changes.
+Service-module versions are likewise independent of shared-package versions.
+
+Classify changes by their effect on consumers of the documented package-root
+entry points. Choose the highest impact that applies to any change in a
+release:
+
+| Change class | Version impact                                                                                                                                                                                                                                                                              | Public-contract examples                                                                                                                                                                                                                                                                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Patch        | Increment patch for a backward-compatible bug fix that restores documented behavior, or a correction to consumer-facing package documentation that does not change the API or behavior. An editorial correction to internal project documentation alone does not require a package release. | Fix a utility implementation to match its documented whitespace behavior; correct a typo in published usage instructions.                                                                                                                                                                                   |
+| Minor        | Increment minor for an opt-in, backward-compatible public addition that preserves existing defaults and valid consumer behavior.                                                                                                                                                            | Add a semantic token; add an optional component property; add an exported type or utility; add a documented package-root entry point. Type additions must still be checked for consumer source compatibility, such as exhaustive unions.                                                                    |
+| Major        | Increment major when an existing valid consumer must change code, configuration, or assumptions to build or retain the documented behavior.                                                                                                                                                 | Remove or rename a token, export, type, utility, or package entry point; make a prop required or narrow its accepted type; change documented utility behavior incompatibly; change a token's documented role/value format; or alter component semantics, defaults, accessibility, or behavior incompatibly. |
+
+An addition is minor only if it preserves existing consumer source
+compatibility. For example, expanding an exported union can break a consumer
+that exhaustively handles every member; if contract tests show that impact,
+classify the change as major or redesign the addition so existing consumers
+remain valid.
+
+Changing the literal value of a design token is not automatically breaking:
+the documented semantic role and format are the contract, not an undocumented
+literal. Treat a value change as a minor design update only when its role,
+format, contrast intent, and existing consumer behavior remain compatible.
+Changing those guarantees, or changing a component's existing default
+behavior, is major. A bug fix that restores the published contract is patch;
+an intentional change to that contract is classified by its compatibility
+impact, even if described as a fix.
+
+Services record a compatible dependency range for every shared package they
+consume in the service package manifest or, until such manifests exist, in
+the release record. For example, `@civicnest/design-tokens: ^1.3.0` declares
+acceptance of compatible stable 1.x releases starting at 1.3.0; it does not
+prove that a particular resolved release has been tested. Record the exact
+resolved package version used for verification and test the service against
+that version before adoption. Use a narrower range or exact pin when the
+service has not verified the broader range, and make pre-1.0 ranges explicit
+because their compatibility expectations differ. A major package release
+must not be adopted under an old-major range; affected services update their
+range and complete migration and compatibility checks before relying on it.
+
+Use the [release-record template](./release-record-template.md) for a
+proposed package release. The [example release record](./release-record-example.md)
+shows a compatible token addition and its version decision.
 
 ### Compatibility and deprecation
 
@@ -166,6 +206,9 @@ exports are configured for shared packages.
 
 - Check that each export in the initial export table is present only at its
   documented package root and that no internal path is supported.
+- For a proposed release, check the version decision against the highest
+  applicable change class, and record each affected service's compatible
+  dependency range and tested resolved version.
 - Run `pnpm typecheck` and `pnpm test` to verify consumer imports and
   accessible component behavior.
 - Run `pnpm format:check` to verify this policy follows repository formatting.

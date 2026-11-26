@@ -117,6 +117,11 @@ Before review:
 
 Never put credentials, environment files, resident information, or other
 secrets in Git history.
+For a shared-package contract change, use the [public contract and
+versioning policy](./public-contracts.md), complete a
+[release record](./release-record-template.md), and check the
+[illustrative example](./release-record-example.md). The current workspace
+does not independently publish shared packages.
 
 ## Troubleshooting
 
