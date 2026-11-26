@@ -34,6 +34,28 @@ model. Service-specific business logic, domain models, and synthetic request
 schemas or fixtures stay in their owning service module and must never be
 added to a shared platform package. A service team proposing a contract change
 reviews its compatibility with the platform contract owner before adoption.
+Service modules must not import another service module. Package consumers use
+the supported `@civicnest/<package>` roots rather than another package's
+internal files.
+
+### Automated dependency boundary check
+
+Run `pnpm boundaries` from the repository root. It parses literal imports,
+re-exports, type imports, and literal dynamic imports or `require` calls in
+TypeScript and TSX files under `src/`, `packages/`, and `services/`. It rejects
+cross-service dependencies, service imports from shared packages, and imports
+that reach another shared package except through its exact `@civicnest/<name>`
+root. The check includes built-in positive and negative examples for each
+rule; no intentionally invalid source files are left in the workspace.
+
+The check recognizes service and package aliases using the current
+`@civicnest/<directory-name>` convention and also resolves relative paths.
+Adding a different alias convention, JavaScript source, generated code, or a
+computed non-literal import requires extending the checker; it does not inspect
+runtime module loading, external dependency graphs, or whether an import uses
+an exported symbol. TypeScript, lint, and build checks remain responsible for
+type and module-resolution errors. Run `pnpm check` to include boundary
+verification in the normal quality workflow.
 
 These are source and ownership boundaries, not promises of separately
 deployable modules. Keep one Vite build and the existing package scripts while
@@ -185,5 +207,7 @@ expectations, see the [shared package contract policy](./public-contracts.md).
 - Confirm the decision rule keeps service-specific behavior and synthetic
   request schemas out of shared packages. Run `pnpm format:check` to verify
   this record follows repository formatting.
+- Run `pnpm boundaries` to verify the service/shared direction rules and
+  their controlled prohibited-import examples.
 - Run `pnpm test` and `pnpm build` to verify that all three service consumers
   resolve through their public aliases in the Vite and TypeScript builds.

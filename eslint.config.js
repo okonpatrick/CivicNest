@@ -11,6 +11,16 @@ export default defineConfig(
     extends: [js.configs.recommended],
   },
   {
+    files: ["scripts/**/*.cjs"],
+    languageOptions: {
+      globals: {
+        __dirname: "readonly",
+        console: "readonly",
+        process: "readonly",
+      },
+    },
+  },
+  {
     files: ["**/*.{ts,tsx}"],
     extends: [
       js.configs.recommended,
