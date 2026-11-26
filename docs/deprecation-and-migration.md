@@ -27,7 +27,12 @@ prevents abrupt breakage when service teams adopt changes on separate schedules.
    same documented behavior, types, visual contrast, and accessible semantics
    for existing consumers throughout the deprecation window. Do not alter both
    visual presentation and functional behavior in the same deprecation step.
-3. **Provide visible developer-facing warnings and documentation.**
+3. **Preserve the existing token-name type contract.** When adding a replacement
+   token, do not expand the existing public `CivicNestTokenName` union. Introduce
+   the replacement name in a separate export (`civicNestSemanticTokens` and
+   `CivicNestSemanticTokenName`) so exhaustive consumers of the original union
+   continue to compile without modification during the deprecation window.
+4. **Provide visible developer-facing warnings and documentation.**
    - Mark deprecated TypeScript symbols, properties, and token keys with a
      `@deprecated` JSDoc tag naming the replacement and removal condition.
    - Where runtime code executes in development (such as a deprecated token
@@ -37,10 +42,11 @@ prevents abrupt breakage when service teams adopt changes on separate schedules.
    - Update the [public contract policy](./public-contracts.md) export table
      and migration notes so consumers can inspect the status without reading
      implementation files.
-4. **Publish an ordered migration path.** Give each affected service team
-   explicit, independent steps to adopt the replacement and verify its own
-   module without waiting for other services.
-5. **Remove only after verification in a major release.** Delete the
+5. **Publish an ordered migration path with recovery steps.** Give each affected
+   service team explicit, independent steps to adopt the replacement and verify
+   its own module without waiting for other services, including a documented
+   recovery path if adoption causes a problem.
+6. **Remove only after verification in a major release.** Delete the
    deprecated contract only in a subsequent major version once the minimum
    window and pre-removal evidence requirements are satisfied.
 
@@ -126,23 +132,45 @@ attach the following evidence to the release record:
 
 ## Implemented example: `colorAccent` to `colorEmphasis`
 
-`@civicnest/design-tokens` previously exported `colorAccent` (`"#39765c"`), which
-was used ambiguously for both card borders and emphasized status text. To clarify
-its semantic role without changing visual presentation or contrast:
+`@civicnest/design-tokens` exported `colorAccent` (`"#39765c"`) used ambiguously
+for both card borders and emphasized status text. To clarify its semantic role
+without changing visual presentation or contrast, `civicNestSemanticTokens` is
+introduced as a new, separately-named export alongside the preserved legacy
+`civicNestTokens`:
 
-- **Replacement added:** `civicNestTokens.colorEmphasis` (`"#39765c"`) is
-  exported from `@civicnest/design-tokens`.
-- **Backward compatibility preserved:** `civicNestTokens.colorAccent` remains
-  exported with the identical value `"#39765c"` (maintaining the same 5.36:1
-  contrast against `colorSurface` `#ffffff`).
+- **Consumer example:** Import both names from the supported package root.
+  Existing code reads `civicNestTokens.colorAccent`; migrated code reads
+  `civicNestSemanticTokens.colorEmphasis`:
+
+  ```ts
+  import {
+    civicNestSemanticTokens,
+    civicNestTokens,
+  } from "@civicnest/design-tokens";
+
+  const existingAccent = civicNestTokens.colorAccent;
+  const replacementEmphasis = civicNestSemanticTokens.colorEmphasis;
+  ```
+
+- **Replacement added:** `civicNestSemanticTokens.colorEmphasis` (`"#39765c"`)
+  is exported from `@civicnest/design-tokens` via the new
+  `civicNestSemanticTokens` object. Exhaustive consumers of the original
+  five-name `CivicNestTokenName` union are unaffected because `colorEmphasis`
+  only appears in the new `CivicNestSemanticTokenName` union.
+- **Backward compatibility preserved:** `civicNestTokens` retains its original
+  five keys — including deprecated `colorAccent` — with the identical value
+  `"#39765c"` (5.36:1 contrast against `colorSurface` `#ffffff`). The
+  `CivicNestTokenName` union is unchanged so exhaustive TypeScript consumers
+  compile without modification.
 - **Developer-facing warnings:** `CivicNestTokens.colorAccent` carries a
   TypeScript `@deprecated` JSDoc notice, and accessing
   `civicNestTokens.colorAccent` in development mode logs a one-time
-  `console.warn` pointing to `colorEmphasis` (tree-shaken from production
-  bundles via `import.meta.env.DEV`).
+  `console.warn` pointing to `civicNestSemanticTokens.colorEmphasis`
+  (tree-shaken from production bundles via `import.meta.env.DEV`).
 - **Independent service status (proving separate schedules):**
   - `@civicnest/ui` (`ServiceCard`) and `@civicnest/resident-support`
-    (`ResidentSupportModule`) have migrated to `civicNestTokens.colorEmphasis`.
+    (`ResidentSupportModule`) have migrated to
+    `civicNestSemanticTokens.colorEmphasis`.
   - `@civicnest/permits` (`PermitsModule`) and `@civicnest/community-services`
     (`CommunityServicesModule`) intentionally remain on
     `civicNestTokens.colorAccent` during the deprecation window to demonstrate
@@ -153,34 +181,145 @@ its semantic role without changing visual presentation or contrast:
 Each service team executes these steps independently on its own schedule within
 the deprecation window:
 
+If a migration regresses, restore only the token import and property
+references in that service to the previously verified `civicNestTokens`
+properties (use `.colorAccent` for `.colorEmphasis`). Keep unrelated markup,
+keyboard handling, status/error semantics, and tests intact. The legacy token
+properties remain supported during the deprecation window. Then run
+`pnpm check`, confirm the service's accessible behavior below, record the
+failure and verified commit in the team's issue, and retry only after its cause
+is understood.
+
 1. **Frontend Platform (`@civicnest/design-tokens` and `@civicnest/ui`) —
    completed:**
-   - Export `colorEmphasis: "#39765c"` alongside deprecated
-     `colorAccent: "#39765c"` and document the deprecation.
-   - Migrate `ServiceCard` in `packages/ui/index.tsx` to `colorEmphasis` while
-     keeping `<article>`, `<h2>`, `<p>`, `aria-labelledby`, and
-     `aria-describedby` unchanged.
+   - Add `civicNestSemanticTokens` with `colorEmphasis: "#39765c"` alongside
+     the preserved `civicNestTokens` (unchanged five-key shape) and document
+     the deprecation.
+   - Migrate `ServiceCard` in `packages/ui/index.tsx` to
+     `civicNestSemanticTokens.colorEmphasis` while keeping `<article>`,
+     `<h2>`, `<p>`, `aria-labelledby`, and `aria-describedby` unchanged.
+   - **Recovery path:** If migration causes a build or test failure, revert
+     `packages/ui/index.tsx` to the `civicNestTokens.*` calls it used before,
+     run `pnpm check`, confirm all tests pass, and file an issue with the
+     failure details before retrying.
 2. **Resident Support Service team (`services/resident-support/`) — completed:**
-   - Replace `civicNestTokens.colorAccent` with `civicNestTokens.colorEmphasis`
-     in `services/resident-support/index.tsx`.
+   - Replace `civicNestTokens.colorAccent` with
+     `civicNestSemanticTokens.colorEmphasis` in
+     `services/resident-support/index.tsx`.
    - Verify `ResidentSupportModule` preserves `role="status"`, accessible card
      name/description, and `#39765c` emphasis color, with zero deprecation
      warnings when rendered independently.
+   - **Recovery path:** If `civicNestSemanticTokens.colorEmphasis` is
+     unavailable or causes a build failure, revert `services/resident-support/index.tsx`
+     to `civicNestTokens.colorAccent` (identical `"#39765c"` value, guaranteed
+     available throughout the window). Run `pnpm check`, confirm the module
+     passes, record the error details in a team issue, and reattempt once the
+     root cause is resolved.
 3. **Permits Service team (`services/permits/`) — scheduled within window:**
-   - Replace `civicNestTokens.colorAccent` with `civicNestTokens.colorEmphasis`
-     in `services/permits/index.tsx`.
+   - Replace `civicNestTokens.colorAccent` with
+     `civicNestSemanticTokens.colorEmphasis` in `services/permits/index.tsx`.
    - Run `pnpm check` and verify keyboard interaction (`Show sample appointment
-options` -> `Refresh sample appointment options`), `role="status"`,
+options` → `Refresh sample appointment options`), `role="status"`,
      `aria-live="polite"`, and `#39765c` styling remain intact.
+   - **Recovery path:** If migration causes a build or test failure, revert
+     `services/permits/index.tsx` to `civicNestTokens.colorAccent`, run
+     `pnpm check` to confirm the permits module still passes all checks, and
+     verify keyboard focus and status semantics are intact before filing an
+     issue. The deprecated `colorAccent` is guaranteed to remain at `"#39765c"`
+     throughout the window; no user-visible or accessible behavior changes
+     while the team resolves the issue.
 4. **Community Services team (`services/community-services/`) — scheduled within
    window:**
-   - Replace `civicNestTokens.colorAccent` with `civicNestTokens.colorEmphasis`
-     in `services/community-services/index.tsx`.
+   - Replace `civicNestTokens.colorAccent` with
+     `civicNestSemanticTokens.colorEmphasis` in
+     `services/community-services/index.tsx`.
    - Run `pnpm check` and verify error-alert and retry-to-status recovery
      semantics and `#39765c` styling remain intact.
+   - **Recovery path:** If migration causes a build or test failure, revert
+     `services/community-services/index.tsx` to `civicNestTokens.colorAccent`,
+     run `pnpm check`, confirm that the error-alert and retry behavior pass,
+     and file a team issue with details before retrying.
 5. **Major release removal (`@civicnest/design-tokens` next major version) —
    gated:**
    - Once at least one minor-release cycle and 90 days have passed and steps
      1–4 are complete and verified, remove `colorAccent` from
      `CivicNestTokens` and `civicNestTokens`, run `pnpm check`, and record the
      major release in a completed release record.
+
+### Accessibility verification record
+
+The following checks were performed for the deprecation example on
+`sprint/month-02-2-7f6b839e` with Node.js 22.19.0 and pnpm 10.17.1.
+
+#### Token and type contract checks (automated)
+
+| Check                                                                            | Command                             | Result                                                                                                                                                                       |
+| -------------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Existing five-key `CivicNestTokenName` exhaustive consumer type-checks           | `pnpm typecheck`                    | Passed — `assertUnreachableToken` switch covering the original five names compiles without error; `colorEmphasis` is in the separate `CivicNestSemanticTokenName` union only |
+| Legacy `colorAccent` returns `"#39765c"` (same as `colorEmphasis`)               | `pnpm test`                         | Passed — `expect(civicNestTokens.colorAccent).toBe(civicNestSemanticTokens.colorEmphasis)`                                                                                   |
+| Deprecation warning fires once in dev, not for `colorEmphasis`                   | `pnpm test`                         | Passed — `warnSpy.toHaveBeenCalledTimes(1)` and message contains `"civicNestSemanticTokens.colorEmphasis"`                                                                   |
+| Migrated consumer (`ResidentSupportModule`) uses `colorEmphasis`                 | `pnpm test`                         | Passed — `toHaveStyle({ color: civicNestSemanticTokens.colorEmphasis })`                                                                                                     |
+| Unmigrated consumer (`PermitsModule`) uses `colorAccent` resolving to same value | `pnpm test`                         | Passed — `toHaveStyle({ color: civicNestSemanticTokens.colorEmphasis })` (identical `"#39765c"` via deprecated getter)                                                       |
+| `ServiceCard` article, `aria-labelledby`, `aria-describedby` unchanged           | `pnpm test`                         | Passed — `getByRole("article", { name })`, `toHaveAccessibleDescription`                                                                                                     |
+| `role="status"` and `role="alert"` preserved                                     | `pnpm test`                         | Passed — `getByRole("status")`, `getByRole("alert")`                                                                                                                         |
+| Lint and format                                                                  | `pnpm lint` and `pnpm format:check` | Passed                                                                                                                                                                       |
+| Production build                                                                 | `pnpm build`                        | Passed — 39 modules                                                                                                                                                          |
+
+Latest full verification on 2026-11-26: `pnpm check` passed lint, dependency
+boundaries (21 source files), all 12 tests in 5 files, formatting, TypeScript,
+and the 39-module production build. Standalone `pnpm typecheck` also passed.
+
+#### Keyboard focus and visible focus indicator
+
+The `.service-demo__action:focus-visible` rule in `src/styles.css` defines the
+visible focus indicator for all service action buttons:
+
+```css
+.service-demo__action:focus-visible {
+  outline: 3px solid #183229;
+  outline-offset: 3px;
+}
+```
+
+Measured properties:
+
+- **Outline color:** `#183229` (dark teal)
+- **Outline style:** `solid`
+- **Outline width:** `3px`
+- **Outline offset:** `3px` (indicator is not clipped by the element border)
+- **Contrast of `#183229` outline against white card surface (`#ffffff`):**
+  13.75:1 (above the 3:1 minimum for non-text focus indicators in WCAG 2.2
+  SC 2.4.11)
+- **Obstruction:** None — action buttons are not inside a sticky or clipping
+  container
+
+The class `.service-demo__action` is assigned to the
+`PermitsModule` and `CommunityServicesModule` action buttons. The automated
+keyboard test verifies focus moves to the expected controls; browser keyboard
+verification below confirms the outline is visible while a control has
+`:focus-visible`.
+
+| Keyboard check                                                                       | Automated test                                            | Result                                                                                                |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Tab moves focus to "Show sample appointment options"                                 | `lets a keyboard user reveal sample permit options`       | Passed — `expect(action).toHaveFocus()`                                                               |
+| Enter reveals permit options and moves focus to "Refresh sample appointment options" | Same test                                                 | Passed — status contains "Example option A"/"Example option B"; `expect(refreshButton).toHaveFocus()` |
+| `role="button"` with correct accessible name throughout                              | All keyboard tests                                        | Passed                                                                                                |
+| Community services alert visible before retry; status visible after retry            | `recovers from the community services error when retried` | Passed                                                                                                |
+
+Both migrated (`ResidentSupportModule`) and unmigrated (`PermitsModule`,
+`CommunityServicesModule`) consumers preserve identical visual token values,
+accessible roles and names, keyboard operation, focus indicator class, and
+status/alert semantics throughout the deprecation window.
+
+#### Manual browser keyboard check
+
+On 2026-11-26, the Vite app was opened in the integrated browser. Pressing Tab
+focused "Show sample appointment options"; its active element matched
+`:focus-visible` and computed outline was `rgb(24, 50, 41) solid 3px` with a
+`3px` offset. Pressing Enter updated the permit status and moved focus to
+"Refresh sample appointment options", which retained the visible outline.
+Tab then focused "Retry sample request" with the same visible outline; Enter
+replaced the community-services alert with the service status and moved focus
+to "Refresh community services", again with the visible outline. The migrated
+Resident Support and unmigrated Permits and Community Services cards retained
+their accessible names, descriptions, headings, and status/alert semantics.

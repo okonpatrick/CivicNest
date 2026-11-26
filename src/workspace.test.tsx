@@ -211,11 +211,10 @@ describe("governed workspace public APIs", () => {
     expect(within(permits).getByRole("status")).toHaveTextContent(
       "Example option B",
     );
-    expect(
-      screen.getByRole("button", {
-        name: "Refresh sample appointment options",
-      }),
-    ).toHaveFocus();
+    const refreshButton = screen.getByRole("button", {
+      name: "Refresh sample appointment options",
+    });
+    expect(refreshButton).toHaveFocus();
   });
 
   it("recovers from the community services error when retried", async () => {
