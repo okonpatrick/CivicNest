@@ -170,8 +170,9 @@ These snapshots were checked against
 [`services/permits/demo-fixtures.ts`](../services/permits/demo-fixtures.ts),
 and
 [`services/community-services/demo-fixtures.ts`](../services/community-services/demo-fixtures.ts)
-at commit `fa1321a`. The linked source files are authoritative if they differ
-from this evidence copy.
+at commit `6d07bc9` (`6d07bc985e8a5696433ac42487738b677d9941bb`). Each fenced
+source snapshot was compared byte-for-byte with the corresponding file at that
+revision. The linked source files remain authoritative.
 
 The stylesheet keeps request wording and data out of shared presentation.
 Permits' unadorned loading text inherits the card's primary text color and is
@@ -488,13 +489,22 @@ export const communityServicesSuccessDemoFixture: CommunityServicesDemoFixture =
 
 #### Source-to-rendered-state trace
 
-| Source content                                                | Service rendering                                             | Shared presentation and semantics                                                                                                                                   |
-| ------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `permitsLoadingDemoFixture.message`                           | Permits renders the message while `status === "loading"`.     | `.service-demo__status` wraps long text; native text inherits `ServiceCard` primary foreground; `role="status"` announces the loading state.                        |
-| `permitsSuccessDemoFixture.options[].label/detail`            | Permits renders each label and detail in its success branch.  | `.service-demo__status--success` consumes the shared success text, surface, and border properties; `role="status"` and `aria-live="polite"` communicate the result. |
-| Permits sample-only caution wording                           | Rendered beside loading and success results.                  | `.service-demo__status--warning` consumes warning properties; `role="note"` preserves the explicit “not reserved” meaning in text.                                  |
-| `communityServicesErrorDemoFixture.message`                   | Community Services renders the message in its error branch.   | `.service-demo__error` consumes shared error text, surface, and border properties; `role="alert"` communicates failure.                                             |
-| `communityServicesSuccessDemoFixture.services[].name/summary` | Community Services renders each name and summary after retry. | `.service-demo__status--success` consumes shared success properties; `role="status"` and `aria-live="polite"` communicate recovery.                                 |
+| Source content                                                | Service rendering                                             | Shared presentation and semantics                                                                                                                                                   |
+| ------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `permitsLoadingDemoFixture.message`                           | Permits renders the message while `status === "loading"`.     | `.service-demo__status` wraps long text; native text inherits `ServiceCard` primary foreground; `role="status"` announces the loading state.                                        |
+| `permitsSuccessDemoFixture.options[].label/detail`            | Permits renders each label and detail in its success branch.  | `.service-demo__status--success` consumes shared `color.state.success`, `successSurface`, and `successBorder`; `role="status"` and `aria-live="polite"` communicate the result.     |
+| Permits sample-only caution wording                           | Rendered beside loading and success results.                  | `.service-demo__status--warning` consumes shared `color.state.warning`, `warningSurface`, and `warningBorder`; `role="note"` preserves the explicit “not reserved” meaning in text. |
+| `communityServicesErrorDemoFixture.message`                   | Community Services renders the message in its error branch.   | `.service-demo__error` consumes shared `color.state.error`, `errorSurface`, and `errorBorder`; `role="alert"` communicates failure.                                                 |
+| `communityServicesSuccessDemoFixture.services[].name/summary` | Community Services renders each name and summary after retry. | `.service-demo__status--success` consumes shared success properties; `role="status"` and `aria-live="polite"` communicate recovery.                                                 |
+
+`ServiceCard` provides each stylesheet custom property from the public
+`@civicnest/design-tokens` taxonomy: action text/surface/border use
+`color.action.*`, hover and active use `interaction.hover.surface` and
+`interaction.active.surface`, disabled uses `color.disabled.*`, status uses
+`color.state.*`, field validation uses `color.validation.error*`, and keyboard
+focus uses `focus.ring.*`. These are semantic API values, not module-local
+color literals. Responsive layout properties are sourced from the same
+taxonomy in the app and shared card.
 
 Review found no conflicting token usage in these fixture consumers: both
 modules use the same public `ServiceCard` and the semantic class treatments
@@ -553,6 +563,28 @@ surface, and border were `rgb(112, 36, 36)`, `rgb(255, 244, 243)`, and
 error treatment. A separate Tab sequence confirmed the textbox and all three
 service action buttons matched `:focus-visible` and retained the same 3px
 outline at all three widths.
+
+**Current-source repeat (2026-11-26, commit `6d07bc9`):** Repeated the
+interaction and responsive checks against the source revision whose exact
+stylesheet and fixture contents are embedded above. At 320px, 768px, and
+1280px, the initial page showed Permits loading and Community Services failure;
+keyboard focus on the Resident Support textbox showed
+`rgb(24, 50, 41) solid 3px`. Submitting a fictional topic showed the success
+status, activating the Permits sample action showed its success options, and
+retrying Community Services showed its success results. Every card fit its
+content; document `scrollWidth` measured 320px, 753px, and 1265px respectively,
+each no greater than the viewport. The full browser sequence completed at each
+width without layout or interaction defects.
+
+**Current-source fixture review (commit `6d07bc9`):** The complete fixture
+sources above contain only generic labels (`Example option A/B`, fictional
+weekday morning/afternoon windows, community learning/shared spaces), generic
+explanations, and explicit sample/synthetic/no-reservation/no-request
+disclaimers. No personal names, contact details, addresses, identifiers,
+specific dates/times, resident requests, live listings, or production
+responses occur in the fixture values. Every rendered field is included in
+the source-to-rendered-state trace; no additional fixture properties are
+rendered by these two modules.
 
 ### Validation findings and disposition
 
