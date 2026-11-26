@@ -308,6 +308,9 @@ describe("governed workspace public APIs", () => {
       "--cn-color-validation-error-border":
         civicNestSemanticTokenTaxonomy.color.validation.errorBorder,
     });
+    const fieldRule = getStylesheetRule(".service-card input");
+    expect(fieldRule).toContain("width: 100%");
+    expect(fieldRule).toContain("min-height: 2.75rem");
     expect(getStylesheetRule(".service-demo__field-error")).toContain(
       "overflow-wrap: anywhere",
     );

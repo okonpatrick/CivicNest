@@ -174,3 +174,18 @@ measurement to exercise the content wrap. Keyboard focus remained
 checked widths. Tests also render a long fictional validation message with
 `aria-invalid`/`aria-describedby` and verify its wrap rule and accessible
 description.
+
+The long validation fragment from
+`associates readable validation feedback with its field` was additionally
+mounted in a Resident Support card in the same browser, using the exact test
+label, input attributes, message, CSS classes, and shared-card token values.
+At **320px**, the input measured 262×44px and the validation message 262×102px;
+at **1280px**, they measured 289×44px and 289×81px. The message wrapped to fit
+its container at both sizes, with no field/message or message/button overlap.
+`document.documentElement.scrollWidth` measured 320px and 1265px respectively,
+both no greater than the viewport (`innerWidth`) and with no horizontal
+overflow. Pressing Tab focused the field at each width; it matched
+`:focus-visible` and showed a computed `rgb(24, 50, 41) solid 3px` outline.
+The following action remained visible and operable below the message. These
+checks confirmed the field sizing rule (`width: 100%`, `min-height: 2.75rem`)
+keeps the input usable and its validation text readable in the actual browser.

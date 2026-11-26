@@ -136,6 +136,20 @@ body {
   border-color: var(--cn-color-validation-error-border);
 }
 
+.service-card input {
+  display: block;
+  width: 100%;
+  max-width: 32rem;
+  min-height: 2.75rem;
+  margin-block: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--cn-color-action-border);
+  border-radius: 0.25rem;
+  background: var(--cn-color-action-surface);
+  color: var(--cn-color-action-text);
+  font: inherit;
+}
+
 .service-demo__field-error {
   min-width: 0;
   padding: 0.5rem 0.75rem;

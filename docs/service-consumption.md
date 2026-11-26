@@ -147,6 +147,9 @@ Services content expanded. No horizontal overflow or card/control clipping
 was observed; buttons remained within their cards and keyboard focus retained
 its visible 3px outline at each width. Detailed viewport measurements are in
 the [responsive contract record](./design-token-taxonomy.md#browser-verification-record).
+The long validation example was also checked in-browser at 320px and 1280px:
+the field and message remained visible, wrapped without overlap, and keyboard
+focus showed its 3px outline. See the same record for element measurements.
 
 ## Dependency ranges, upgrades, and release evidence
 
