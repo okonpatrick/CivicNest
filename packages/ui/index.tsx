@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from "react";
-import { civicNestTokens } from "@civicnest/design-tokens";
+import { civicNestSemanticTokens } from "@civicnest/design-tokens";
 
 export interface ServiceCardProps {
   title: string;
@@ -20,11 +20,11 @@ export function ServiceCard({
       aria-describedby={descriptionId}
       aria-labelledby={headingId}
       style={{
-        backgroundColor: civicNestTokens.colorSurface,
-        border: `1px solid ${civicNestTokens.colorEmphasis}`,
-        borderRadius: civicNestTokens.radiusCard,
-        color: civicNestTokens.colorText,
-        padding: civicNestTokens.spaceCard,
+        backgroundColor: civicNestSemanticTokens.colorSurface,
+        border: `1px solid ${civicNestSemanticTokens.colorEmphasis}`,
+        borderRadius: civicNestSemanticTokens.radiusCard,
+        color: civicNestSemanticTokens.colorText,
+        padding: civicNestSemanticTokens.spaceCard,
       }}
     >
       <h2 id={headingId}>{title}</h2>

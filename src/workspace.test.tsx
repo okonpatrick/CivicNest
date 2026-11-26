@@ -2,7 +2,11 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import {
+  civicNestSemanticTokens,
   civicNestTokens,
+  type CivicNestSemanticTokenName,
+  type CivicNestSemanticTokens,
+  type CivicNestSemanticTokenValue,
   type CivicNestTokenName,
   type CivicNestTokens,
   type CivicNestTokenValue,
@@ -13,26 +17,64 @@ import { CommunityServicesModule } from "@civicnest/community-services";
 import { PermitsModule } from "@civicnest/permits";
 import { ResidentSupportModule } from "@civicnest/resident-support";
 
+function assertUnreachableToken(token: never): never {
+  throw new Error(`Unexpected token name: ${String(token)}`);
+}
+
+function describeLegacyTokenExhaustively(name: CivicNestTokenName): string {
+  switch (name) {
+    case "colorAccent":
+      return "Accent emphasis";
+    case "colorSurface":
+      return "Surface background";
+    case "colorText":
+      return "Primary text";
+    case "radiusCard":
+      return "Card corner radius";
+    case "spaceCard":
+      return "Card padding";
+    default:
+      return assertUnreachableToken(name);
+  }
+}
+
 describe("governed workspace public APIs", () => {
   it("exports shared tokens, components, and service-neutral utilities", () => {
-    const emphasisToken: CivicNestTokenName = "colorEmphasis";
-    const emphasisValue: CivicNestTokenValue = civicNestTokens[emphasisToken];
-    const tokenShape: CivicNestTokens = civicNestTokens;
+    const legacyAccentToken: CivicNestTokenName = "colorAccent";
+    const legacyAccentValue: CivicNestTokenValue =
+      civicNestTokens[legacyAccentToken];
+    const legacyShape: CivicNestTokens = civicNestTokens;
+    const semanticToken: CivicNestSemanticTokenName = "colorEmphasis";
+    const semanticValue: CivicNestSemanticTokenValue =
+      civicNestSemanticTokens[semanticToken];
+    const semanticShape: CivicNestSemanticTokens = civicNestSemanticTokens;
     const cardProps: ServiceCardProps = {
       title: "Example service",
       description: "Synthetic example",
     };
 
-    expect(Object.keys(tokenShape)).toEqual([
+    expect(Object.keys(legacyShape)).toEqual([
       "colorAccent",
+      "colorSurface",
+      "colorText",
+      "radiusCard",
+      "spaceCard",
+    ]);
+    expect(Object.keys(semanticShape)).toEqual([
       "colorEmphasis",
       "colorSurface",
       "colorText",
       "radiusCard",
       "spaceCard",
     ]);
-    expect(emphasisValue).toBe("#39765c");
-    expect(civicNestTokens.colorAccent).toBe(civicNestTokens.colorEmphasis);
+    expect(describeLegacyTokenExhaustively(legacyAccentToken)).toBe(
+      "Accent emphasis",
+    );
+    expect(legacyAccentValue).toBe("#39765c");
+    expect(semanticValue).toBe("#39765c");
+    expect(civicNestTokens.colorAccent).toBe(
+      civicNestSemanticTokens.colorEmphasis,
+    );
     expect(normalizeDisplayText("  local \n services  ")).toBe(
       "local services",
     );
@@ -43,8 +85,8 @@ describe("governed workspace public APIs", () => {
     const card = screen.getByRole("article", { name: "Example service" });
     expect(card).toHaveAccessibleDescription("Synthetic example");
     expect(card).toHaveStyle({
-      borderColor: civicNestTokens.colorEmphasis,
-      color: civicNestTokens.colorText,
+      borderColor: civicNestSemanticTokens.colorEmphasis,
+      color: civicNestSemanticTokens.colorText,
     });
   });
 
@@ -53,20 +95,22 @@ describe("governed workspace public APIs", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     try {
-      const { civicNestTokens: freshTokens } =
-        await import("@civicnest/design-tokens");
+      const {
+        civicNestSemanticTokens: freshSemanticTokens,
+        civicNestTokens: freshTokens,
+      } = await import("@civicnest/design-tokens");
 
-      expect(freshTokens.colorEmphasis).toBe("#39765c");
+      expect(freshSemanticTokens.colorEmphasis).toBe("#39765c");
       expect(warnSpy).not.toHaveBeenCalled();
 
       expect(freshTokens.colorAccent).toBe("#39765c");
       expect(freshTokens.colorAccent).toBe("#39765c");
       expect(warnSpy).toHaveBeenCalledTimes(1);
       expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("colorAccent"),
+        expect.stringContaining("civicNestTokens.colorAccent"),
       );
       expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("colorEmphasis"),
+        expect.stringContaining("civicNestSemanticTokens.colorEmphasis"),
       );
     } finally {
       warnSpy.mockRestore();
@@ -87,7 +131,7 @@ describe("governed workspace public APIs", () => {
     });
     const migratedStatus = within(residentSupport).getByRole("status");
     expect(migratedStatus).toHaveStyle({
-      color: civicNestTokens.colorEmphasis,
+      color: civicNestSemanticTokens.colorEmphasis,
     });
 
     await user.click(
@@ -99,7 +143,7 @@ describe("governed workspace public APIs", () => {
     const permits = screen.getByRole("article", { name: "Permits" });
     const unmigratedStatus = within(permits).getByRole("status");
     expect(unmigratedStatus).toHaveStyle({
-      color: civicNestTokens.colorEmphasis,
+      color: civicNestSemanticTokens.colorEmphasis,
     });
     expect(unmigratedStatus).toHaveTextContent("Example option A");
   });

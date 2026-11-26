@@ -1,4 +1,4 @@
-import { civicNestTokens } from "@civicnest/design-tokens";
+import { civicNestSemanticTokens } from "@civicnest/design-tokens";
 import { ServiceCard } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
 import { residentSupportDemoFixture } from "./demo-fixtures";
@@ -13,7 +13,7 @@ export function ResidentSupportModule() {
         <h3 id="resident-support-topics">Support topics</h3>
         <p
           className="service-demo__status"
-          style={{ color: civicNestTokens.colorEmphasis }}
+          style={{ color: civicNestSemanticTokens.colorEmphasis }}
           role="status"
         >
           {normalizeDisplayText(residentSupportDemoFixture.summary)}
