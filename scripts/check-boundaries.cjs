@@ -7,12 +7,14 @@ const ts = require("typescript");
 
 const defaultRoot = path.resolve(__dirname, "..");
 const rootArgument = process.argv.indexOf("--root");
-const root = rootArgument === -1
-  ? defaultRoot
-  : path.resolve(process.argv[rootArgument + 1]);
+const root =
+  rootArgument === -1
+    ? defaultRoot
+    : path.resolve(process.argv[rootArgument + 1]);
 const ownedRoots = ["packages", "services"].flatMap((area) => {
   const areaPath = path.join(root, area);
-  return fs.readdirSync(areaPath, { withFileTypes: true })
+  return fs
+    .readdirSync(areaPath, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => ({
       kind: area === "packages" ? "package" : "service",
@@ -25,10 +27,12 @@ function findOwner(filePath) {
   const absolutePath = path.resolve(filePath);
   return ownedRoots.find((owner) => {
     const relativePath = path.relative(owner.path, absolutePath);
-    return relativePath === "" ||
+    return (
+      relativePath === "" ||
       (!relativePath.startsWith(`..${path.sep}`) &&
         relativePath !== ".." &&
-        !path.isAbsolute(relativePath));
+        !path.isAbsolute(relativePath))
+    );
   });
 }
 
@@ -68,7 +72,8 @@ function collectImports(sourceFile) {
       ts.isCallExpression(node) &&
       node.arguments.length === 1 &&
       (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
-        (ts.isIdentifier(node.expression) && node.expression.text === "require"))
+        (ts.isIdentifier(node.expression) &&
+          node.expression.text === "require"))
     ) {
       specifier = getFixedString(node.arguments[0]);
     } else if (
@@ -82,7 +87,8 @@ function collectImports(sourceFile) {
     if (specifier !== undefined) {
       imports.push({
         specifier,
-        line: sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1,
+        line:
+          sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1,
       });
     }
     ts.forEachChild(node, visit);
@@ -193,7 +199,7 @@ function runSelfTests() {
     {
       name: "fixed-template cross-service dynamic import is rejected",
       sourcePath: "services/resident-support/index.tsx",
-      source: 'void import(`@civicnest/permits`);',
+      source: "void import(`@civicnest/permits`);",
       expected: ["cannot import service"],
     },
     {
@@ -250,13 +256,13 @@ function runSelfTests() {
     {
       name: "fixed-template dynamic package deep import is rejected",
       sourcePath: "services/resident-support/index.tsx",
-      source: 'void import(`@civicnest/ui/internal`);',
+      source: "void import(`@civicnest/ui/internal`);",
       expected: ["outside its supported public-entry-point import"],
     },
     {
       name: "fixed-template dynamic service deep import is rejected",
       sourcePath: "src/app/App.tsx",
-      source: 'void import(`../../services/permits/internal`);',
+      source: "void import(`../../services/permits/internal`);",
       expected: ["outside its supported public-entry-point import"],
     },
   ];
@@ -336,8 +342,9 @@ if (!isFixtureScan) {
   runCommandSelfTest();
 }
 
-const sourceFiles = ["src", "packages", "services"]
-  .flatMap((directory) => listSourceFiles(path.join(root, directory)));
+const sourceFiles = ["src", "packages", "services"].flatMap((directory) =>
+  listSourceFiles(path.join(root, directory)),
+);
 const failures = sourceFiles.flatMap((filePath) =>
   inspectSource(filePath, fs.readFileSync(filePath, "utf8")).map(
     ({ line, message }) => ({
@@ -350,9 +357,7 @@ const failures = sourceFiles.flatMap((filePath) =>
 
 if (failures.length > 0) {
   for (const failure of failures) {
-    console.error(
-      `${failure.filePath}:${failure.line}: ${failure.message}`,
-    );
+    console.error(`${failure.filePath}:${failure.line}: ${failure.message}`);
   }
   process.exitCode = 1;
 } else {

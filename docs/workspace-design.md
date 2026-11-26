@@ -48,6 +48,7 @@ that reach another owned package or service except through its exact
 `@civicnest/<name>` public entry-point alias. The check includes built-in
 positive and negative examples for each rule; no intentionally invalid source
 files are left in the workspace.
+
 The checker also launches itself against an isolated temporary project and
 asserts that a prohibited host-to-service deep import produces a non-zero
 status and a diagnostic; the fixture is removed afterward.
@@ -60,6 +61,20 @@ runtime module loading, external dependency graphs, or whether an import uses
 an exported symbol. TypeScript, lint, and build checks remain responsible for
 type and module-resolution errors. Run `pnpm check` to include boundary
 verification in the normal quality workflow.
+
+#### Boundary verification receipt
+
+Verified on 2026-11-26 from the repository root on
+`sprint/month-02-1-7f6b839e`, with Node.js 22.19.0 and pnpm 10.17.1:
+
+| Command           | Result | Evidence                                                                                              |
+| ----------------- | ------ | ----------------------------------------------------------------------------------------------------- |
+| `pnpm boundaries` | Exit 0 | 18 source files scanned; 20 controlled rule tests and 1 command-level test passed.                    |
+| `pnpm check`      | Exit 0 | Lint, boundaries, 5 test files / 8 tests, format check, TypeScript, and Vite production build passed. |
+
+`pnpm check` also passed after adding `.cjs` to the Prettier file patterns, so
+the boundary checker source receives the same formatting coverage as the
+other JavaScript files.
 
 #### Requesting a boundary exception
 
