@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import {
   civicNestTokens,
@@ -42,7 +43,7 @@ describe("governed workspace public APIs", () => {
     });
   });
 
-  it("exposes each representative service through its public entry point", () => {
+  it("renders independent service content and loading, success, and error states", () => {
     render(
       <>
         <ResidentSupportModule />
@@ -60,5 +61,80 @@ describe("governed workspace public APIs", () => {
     expect(
       screen.getByRole("heading", { name: "Community services" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Support topics" }),
+    ).toBeInTheDocument();
+    const residentSupport = screen.getByRole("article", {
+      name: "Resident support",
+    });
+    const permits = screen.getByRole("article", { name: "Permits" });
+    const communityServices = screen.getByRole("article", {
+      name: "Community services",
+    });
+    expect(within(residentSupport).getByRole("list").children).toHaveLength(3);
+    expect(within(residentSupport).getByRole("status")).toHaveTextContent(
+      "Example guidance is ready to explore.",
+    );
+    expect(within(permits).getByRole("status")).toHaveTextContent(
+      "Loading sample appointment options.",
+    );
+    expect(within(communityServices).getByRole("alert")).toHaveTextContent(
+      "The synthetic sample request failed. Example services could not be loaded.",
+    );
+    expect(
+      within(communityServices).getByRole("button", {
+        name: "Retry sample request",
+      }),
+    ).toBeEnabled();
+  });
+
+  it("lets a keyboard user reveal sample permit options", async () => {
+    const user = userEvent.setup();
+    render(<PermitsModule />);
+
+    await user.tab();
+    const action = screen.getByRole("button", {
+      name: "Show sample appointment options",
+    });
+    expect(action).toHaveFocus();
+    await user.keyboard("{Enter}");
+
+    const permits = screen.getByRole("article", { name: "Permits" });
+    expect(within(permits).getByRole("status")).toHaveTextContent(
+      "Example option A",
+    );
+    expect(within(permits).getByRole("status")).toHaveTextContent(
+      "Example option B",
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "Refresh sample appointment options",
+      }),
+    ).toHaveFocus();
+  });
+
+  it("recovers from the community services error when retried", async () => {
+    const user = userEvent.setup();
+    render(<CommunityServicesModule />);
+
+    const communityServices = screen.getByRole("article", {
+      name: "Community services",
+    });
+    expect(within(communityServices).getByRole("alert")).toBeInTheDocument();
+    await user.click(
+      within(communityServices).getByRole("button", {
+        name: "Retry sample request",
+      }),
+    );
+
+    expect(
+      within(communityServices).queryByRole("alert"),
+    ).not.toBeInTheDocument();
+    expect(within(communityServices).getByRole("status")).toHaveTextContent(
+      "Community learning",
+    );
+    expect(within(communityServices).getByRole("status")).toHaveTextContent(
+      "Shared spaces",
+    );
   });
 });

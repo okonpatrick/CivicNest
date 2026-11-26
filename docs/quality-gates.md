@@ -15,9 +15,12 @@ The package scripts are the canonical local entry points:
   not service TypeScript.
 - `pnpm test` runs Vitest and the Testing Library suite, so test configuration
   failures fail the gate.
-- `pnpm format:check` verifies formatting; `pnpm format` applies it.
+- `pnpm boundaries` checks source dependency direction and public entry points.
+- `pnpm format:check` verifies formatting for JavaScript, CommonJS, TypeScript,
+  CSS, JSON, and Markdown; `pnpm format` applies it.
 - `pnpm build` type-checks and creates the production bundle.
-- `pnpm check` runs lint, tests, formatting verification, and build together.
+- `pnpm check` runs lint, boundary checks, tests, formatting verification, and
+  build together.
 
 The root TypeScript project covers `src/`, `packages/`, and `services/`;
 type-aware linting uses that project for TypeScript files in each area. These

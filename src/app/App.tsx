@@ -14,6 +14,10 @@ export default function App({ appName }: AppProps) {
       <p className="welcome__description">
         Your home for discovering and connecting with local services.
       </p>
+      <p className="welcome__note">
+        Synthetic demonstration only. Actions update local sample states; no
+        service requests are sent.
+      </p>
       <section className="service-list" aria-label="Available services">
         <ResidentSupportModule />
         <PermitsModule />

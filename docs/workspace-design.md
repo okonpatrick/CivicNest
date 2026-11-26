@@ -34,6 +34,66 @@ model. Service-specific business logic, domain models, and synthetic request
 schemas or fixtures stay in their owning service module and must never be
 added to a shared platform package. A service team proposing a contract change
 reviews its compatibility with the platform contract owner before adoption.
+Service modules must not import another service module. Package consumers use
+the supported `@civicnest/<package>` roots rather than another package's
+internal files.
+
+### Automated dependency boundary check
+
+Run `pnpm boundaries` from the repository root. It parses literal imports,
+re-exports, type imports, and literal dynamic imports or `require` calls in
+TypeScript and TSX files under `src/`, `packages/`, and `services/`. It rejects
+cross-service dependencies, service imports from shared packages, and imports
+that reach another owned package or service except through its exact
+`@civicnest/<name>` public entry-point alias. The check includes built-in
+positive and negative examples for each rule; no intentionally invalid source
+files are left in the workspace.
+
+The checker also launches itself against an isolated temporary project and
+asserts that a prohibited host-to-service deep import produces a non-zero
+status and a diagnostic; the fixture is removed afterward.
+
+The check recognizes service and package aliases using the current
+`@civicnest/<directory-name>` convention and also resolves relative paths.
+Adding a different alias convention, JavaScript source, generated code, or a
+computed non-literal import requires extending the checker; it does not inspect
+runtime module loading, external dependency graphs, or whether an import uses
+an exported symbol. TypeScript, lint, and build checks remain responsible for
+type and module-resolution errors. Run `pnpm check` to include boundary
+verification in the normal quality workflow.
+
+#### Boundary verification receipt
+
+Verified on 2026-11-26 from the repository root on
+`sprint/month-02-1-7f6b839e`, with Node.js 22.19.0 and pnpm 10.17.1:
+
+| Command           | Result | Evidence                                                                                              |
+| ----------------- | ------ | ----------------------------------------------------------------------------------------------------- |
+| `pnpm boundaries` | Exit 0 | 18 source files scanned; 20 controlled rule tests and 1 command-level test passed.                    |
+| `pnpm check`      | Exit 0 | Lint, boundaries, 5 test files / 8 tests, format check, TypeScript, and Vite production build passed. |
+
+`pnpm check` also passed after adding `.cjs` to the Prettier file patterns, so
+the boundary checker source receives the same formatting coverage as the
+other JavaScript files.
+
+#### Requesting a boundary exception
+
+The checker has no inline suppression or unreviewed allow-list: an exception
+must not be introduced by disabling a rule or adding a one-off path. The
+requester records a decision in `docs/` before changing enforcement, including
+the exact source and target paths, the rule affected, the concrete need,
+alternatives considered, affected owners, compatibility and operational risks,
+and a review date. The owner of the source boundary and the owner of the target
+boundary must approve it; the Frontend Platform team also approves changes to
+the checker and ensures the exception is as narrow as possible.
+
+Record each approval and the review date in the decision. Update the checker
+and its positive/negative controlled examples in the same change, then run
+`pnpm boundaries` and `pnpm check`. At the recorded date, the source and target
+owners and Frontend Platform re-evaluate whether the need remains, confirm the
+documented scope still matches the code, and remove the exception if it is no
+longer necessary. An exception is not considered approved until its decision
+and corresponding tested checker change are reviewed and merged.
 
 These are source and ownership boundaries, not promises of separately
 deployable modules. Keep one Vite build and the existing package scripts while
@@ -125,8 +185,11 @@ the platform.
 
 The selected model prioritizes clear ownership and dependency direction while
 avoiding infrastructure that does not yet solve a demonstrated problem. It
-trades automatic project-level enforcement and independent deployment for
-lower setup cost; those are explicit revisit points, not assumed capabilities.
+trades project-level build orchestration and independent deployment for lower
+setup cost; those are explicit revisit points, not assumed capabilities. The
+automated checker above is source-level enforcement within the current Vite
+project; it complements, but does not replace, owner review, and it does not
+isolate builds or releases.
 Compared with the undivided model, it deliberately trades unrestricted reuse
 for narrower, reviewable shared APIs: common accessible primitives reduce
 accessibility drift, while service-specific logic stays independently owned.
@@ -147,12 +210,21 @@ build, not independently deployed artifacts.
 TypeScript and Vite map the explicit `@civicnest/*` public entry-point aliases
 to these files. Consumers use only those aliases; implementation subpaths are
 not mapped as supported imports. `packages/ui/` consumes tokens, and each
-service module consumes the public component and utility APIs. Shared packages
-have no service imports. The root package scripts remain the common local
-quality gates. Runtime federation and separate deployment remain deferred
-because a single host build is sufficient to prove import boundaries without
-the additional remote-loading, compatibility, security, and operational
-failure modes.
+service module consumes the public token, component, and utility APIs. Shared
+packages have no service imports. The root package scripts remain the common
+local quality gates. Runtime federation and separate deployment remain
+deferred because a single host build is sufficient to prove import boundaries
+without the additional remote-loading, compatibility, security, and
+operational failure modes.
+
+The cross-package consumption demonstration gives each service local,
+typed synthetic fixtures and a focused UI fragment: resident support starts
+with guidance available, permits starts in a loading state and can reveal
+sample options, and community services starts with an identified sample-request
+failure and can recover to example listings. Actions only update local demo
+state; they do not call a service or represent real appointment availability.
+The Testing Library consumer test imports modules through their public
+`@civicnest/*` roots and verifies status, error, and keyboard recovery behavior.
 
 ## Revisit triggers
 
@@ -185,5 +257,7 @@ expectations, see the [shared package contract policy](./public-contracts.md).
 - Confirm the decision rule keeps service-specific behavior and synthetic
   request schemas out of shared packages. Run `pnpm format:check` to verify
   this record follows repository formatting.
+- Run `pnpm boundaries` to verify the service/shared direction rules and
+  their controlled prohibited-import examples.
 - Run `pnpm test` and `pnpm build` to verify that all three service consumers
   resolve through their public aliases in the Vite and TypeScript builds.
