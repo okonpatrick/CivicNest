@@ -45,39 +45,38 @@ function resolveImport(sourcePath, specifier) {
   return findOwner(path.resolve(path.dirname(sourcePath), specifier));
 }
 
+function getFixedString(node) {
+  return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)
+    ? node.text
+    : undefined;
+}
+
 function collectImports(sourceFile) {
   const imports = [];
   function visit(node) {
     let specifier;
     if (
       (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-      node.moduleSpecifier &&
-      ts.isStringLiteral(node.moduleSpecifier)
+      node.moduleSpecifier
     ) {
-      specifier = node.moduleSpecifier.text;
+      specifier = getFixedString(node.moduleSpecifier);
     } else if (ts.isImportTypeNode(node)) {
-      const argument = node.argument;
-      if (
-        ts.isLiteralTypeNode(argument) &&
-        ts.isStringLiteral(argument.literal)
-      ) {
-        specifier = argument.literal.text;
+      if (ts.isLiteralTypeNode(node.argument)) {
+        specifier = getFixedString(node.argument.literal);
       }
     } else if (
       ts.isCallExpression(node) &&
       node.arguments.length === 1 &&
-      ts.isStringLiteral(node.arguments[0]) &&
       (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
         (ts.isIdentifier(node.expression) && node.expression.text === "require"))
     ) {
-      specifier = node.arguments[0].text;
+      specifier = getFixedString(node.arguments[0]);
     } else if (
       ts.isImportEqualsDeclaration(node) &&
       ts.isExternalModuleReference(node.moduleReference) &&
-      node.moduleReference.expression &&
-      ts.isStringLiteral(node.moduleReference.expression)
+      node.moduleReference.expression
     ) {
-      specifier = node.moduleReference.expression.text;
+      specifier = getFixedString(node.moduleReference.expression);
     }
 
     if (specifier !== undefined) {
@@ -185,6 +184,30 @@ function runSelfTests() {
       source: 'import { PermitsModule } from "@civicnest/permits";',
       expected: ["cannot import service"],
     },
+    ...["resident-support", "permits", "community-services"].map((service) => ({
+      name: `shared package fixed-template dynamic import of ${service} is rejected`,
+      sourcePath: "packages/ui/index.tsx",
+      source: `void import(\`@civicnest/${service}\`);`,
+      expected: ["cannot import service"],
+    })),
+    {
+      name: "fixed-template cross-service dynamic import is rejected",
+      sourcePath: "services/resident-support/index.tsx",
+      source: 'void import(`@civicnest/permits`);',
+      expected: ["cannot import service"],
+    },
+    {
+      name: "same-service fixed-template relative dynamic import is allowed",
+      sourcePath: "services/resident-support/index.tsx",
+      source: "void import(`./helper`);",
+      expected: [],
+    },
+    {
+      name: "substituted template dynamic import is not treated as fixed",
+      sourcePath: "services/resident-support/index.tsx",
+      source: 'void import(`@civicnest/${"permits"}`);',
+      expected: [],
+    },
     {
       name: "package deep alias import is rejected",
       sourcePath: "services/resident-support/index.tsx",
@@ -223,6 +246,18 @@ function runSelfTests() {
         "cannot import service",
         "outside its supported public-entry-point import",
       ],
+    },
+    {
+      name: "fixed-template dynamic package deep import is rejected",
+      sourcePath: "services/resident-support/index.tsx",
+      source: 'void import(`@civicnest/ui/internal`);',
+      expected: ["outside its supported public-entry-point import"],
+    },
+    {
+      name: "fixed-template dynamic service deep import is rejected",
+      sourcePath: "src/app/App.tsx",
+      source: 'void import(`../../services/permits/internal`);',
+      expected: ["outside its supported public-entry-point import"],
     },
   ];
 
@@ -269,7 +304,7 @@ function runCommandSelfTest() {
     fs.mkdirSync(serviceDirectory, { recursive: true });
     fs.writeFileSync(
       path.join(hostDirectory, "host.ts"),
-      'import { Internal } from "../../services/permits/internal";\nvoid Internal;\n',
+      "void import(`../../services/permits/internal`);\n",
     );
     fs.writeFileSync(
       path.join(serviceDirectory, "internal.ts"),
