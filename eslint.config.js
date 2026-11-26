@@ -15,6 +15,7 @@ export default defineConfig(
     languageOptions: {
       globals: {
         __dirname: "readonly",
+        __filename: "readonly",
         console: "readonly",
         process: "readonly",
       },

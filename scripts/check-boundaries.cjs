@@ -1,9 +1,15 @@
 const assert = require("node:assert/strict");
+const { spawnSync } = require("node:child_process");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const ts = require("typescript");
 
-const root = path.resolve(__dirname, "..");
+const defaultRoot = path.resolve(__dirname, "..");
+const rootArgument = process.argv.indexOf("--root");
+const root = rootArgument === -1
+  ? defaultRoot
+  : path.resolve(process.argv[rootArgument + 1]);
 const ownedRoots = ["packages", "services"].flatMap((area) => {
   const areaPath = path.join(root, area);
   return fs.readdirSync(areaPath, { withFileTypes: true })
@@ -250,7 +256,50 @@ function listSourceFiles(directory) {
   });
 }
 
-const selfTestCount = runSelfTests();
+function runCommandSelfTest() {
+  const fixtureRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "civicnest-boundary-command-"),
+  );
+  const hostDirectory = path.join(fixtureRoot, "src", "app");
+  const serviceDirectory = path.join(fixtureRoot, "services", "permits");
+
+  try {
+    fs.mkdirSync(path.join(fixtureRoot, "packages"), { recursive: true });
+    fs.mkdirSync(hostDirectory, { recursive: true });
+    fs.mkdirSync(serviceDirectory, { recursive: true });
+    fs.writeFileSync(
+      path.join(hostDirectory, "host.ts"),
+      'import { Internal } from "../../services/permits/internal";\nvoid Internal;\n',
+    );
+    fs.writeFileSync(
+      path.join(serviceDirectory, "internal.ts"),
+      "export const Internal = true;\n",
+    );
+
+    const result = spawnSync(
+      process.execPath,
+      [__filename, "--root", fixtureRoot],
+      { encoding: "utf8" },
+    );
+    const output = `${result.stdout}\n${result.stderr}`;
+
+    assert.equal(result.error, undefined, "boundary command starts");
+    assert.notEqual(result.status, 0, "boundary command rejects the fixture");
+    assert.match(
+      output,
+      /src[\\/]app[\\/]host\.ts:1: import .* reaches service "permits"/,
+      "boundary command reports the prohibited import",
+    );
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+}
+
+const isFixtureScan = rootArgument !== -1;
+const selfTestCount = isFixtureScan ? 0 : runSelfTests();
+if (!isFixtureScan) {
+  runCommandSelfTest();
+}
 
 const sourceFiles = ["src", "packages", "services"]
   .flatMap((directory) => listSourceFiles(path.join(root, directory)));
@@ -273,6 +322,6 @@ if (failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    `Dependency boundaries passed (${sourceFiles.length} source files; ${selfTestCount} controlled self-tests).`,
+    `Dependency boundaries passed (${sourceFiles.length} source files; ${selfTestCount} controlled rule tests and ${isFixtureScan ? 0 : 1} command-level test).`,
   );
 }

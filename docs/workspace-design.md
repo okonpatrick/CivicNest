@@ -48,6 +48,9 @@ that reach another owned package or service except through its exact
 `@civicnest/<name>` public entry-point alias. The check includes built-in
 positive and negative examples for each rule; no intentionally invalid source
 files are left in the workspace.
+The checker also launches itself against an isolated temporary project and
+asserts that a prohibited host-to-service deep import produces a non-zero
+status and a diagnostic; the fixture is removed afterward.
 
 The check recognizes service and package aliases using the current
 `@civicnest/<directory-name>` convention and also resolves relative paths.
@@ -167,8 +170,11 @@ the platform.
 
 The selected model prioritizes clear ownership and dependency direction while
 avoiding infrastructure that does not yet solve a demonstrated problem. It
-trades automatic project-level enforcement and independent deployment for
-lower setup cost; those are explicit revisit points, not assumed capabilities.
+trades project-level build orchestration and independent deployment for lower
+setup cost; those are explicit revisit points, not assumed capabilities. The
+automated checker above is source-level enforcement within the current Vite
+project; it complements, but does not replace, owner review, and it does not
+isolate builds or releases.
 Compared with the undivided model, it deliberately trades unrestricted reuse
 for narrower, reviewable shared APIs: common accessible primitives reduce
 accessibility drift, while service-specific logic stays independently owned.
