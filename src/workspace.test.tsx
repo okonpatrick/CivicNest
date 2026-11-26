@@ -433,9 +433,7 @@ describe("governed workspace public APIs", () => {
       name: "Resident support",
     });
     const migratedStatus = within(residentSupport).getByRole("status");
-    expect(migratedStatus).toHaveStyle({
-      color: civicNestSemanticTokens.colorEmphasis,
-    });
+    expect(migratedStatus).toHaveTextContent(/Example guidance is ready/);
 
     await user.click(
       screen.getByRole("button", {

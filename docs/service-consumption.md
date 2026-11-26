@@ -151,6 +151,76 @@ The long validation example was also checked in-browser at 320px and 1280px:
 the field and message remained visible, wrapped without overlap, and keyboard
 focus showed its 3px outline. See the same record for element measurements.
 
+## Token consumer validation
+
+The three service modules import `ServiceCard` through the public
+`@civicnest/ui` package root. `ServiceCard` consumes the public
+`@civicnest/design-tokens` taxonomy and provides the shared semantic status,
+validation, action, and focus foundations to its children. The modules choose
+their own state models, content, and synthetic fixtures; state classes use the
+shared card-provided semantic values rather than module-local color overrides.
+No token or UI implementation deep imports are used.
+
+The sample app represents all four request outcomes across the services:
+
+| Module             | Synthetic state(s)                   | Observable communication and action                                                                                                                                               |
+| ------------------ | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resident Support   | Success and invalid topic submission | `status` guidance; empty fictional-topic submission sets `aria-invalid`, associates readable feedback with the textbox, and a valid synthetic topic submission announces success. |
+| Permits            | Loading and success                  | `status` announces loading and sample options; the action changes to a usable refresh control. A `note` clarifies that no appointment is reserved.                                |
+| Community Services | Failed request and recovery success  | `alert` communicates the failed sample request; retry changes to a `status` with synthetic results and a refresh control.                                                         |
+
+Focused Testing Library checks live beside each module in
+`services/{resident-support,permits,community-services}/index.test.tsx`.
+They assert accessible headings, named controls, status/alert/note content,
+field-error association, and recovery behavior. Run all of them with
+`pnpm test`; they do not depend on CSS class names or token values.
+
+### Lightweight visual and keyboard inspection
+
+1. Start the demo with `pnpm dev` and open it in a browser.
+2. At **320px**, **768px**, and **1280px**, reload and use Tab to focus the
+   Resident Support topic field. Confirm the focus outline is visible.
+3. Press Enter with the field empty. Confirm the field is marked invalid and
+   its textual alert remains visible and associated. Type a fictional topic
+   and submit; confirm a success status replaces the validation alert.
+4. Tab to the Resident Support action, then the Permits action, and then the
+   Community Services retry action. Confirm each focused control has a visible
+   outline. Activate the Permits and Community Services actions and inspect
+   their success statuses and controls.
+5. Confirm all card content and controls remain within the cards, long text
+   wraps, and the document has no horizontal overflow (`scrollWidth` is no
+   greater than the viewport width). Status meaning must remain understandable
+   from its text and semantic role, not color alone.
+
+**Browser inspection record (2026-11-26):** Performed with the integrated
+browser at all three widths, exercising invalid then successful Resident
+Support input, Permits loading-to-success, and Community Services
+failure-to-success. Textbox and action keyboard focus showed a visible
+`rgb(24, 50, 41) solid 3px` outline. The invalid message remained associated
+with its field; at 320px the field and message were each 262px wide, and at
+768px/1280px the field and message fit their cards. No card content overflow
+was detected. Document `scrollWidth` was 320px, 753px, and 1265px for viewport
+widths 320px, 768px, and 1280px respectively. All actions were enabled and
+each status/alert remained textually distinguishable.
+
+Computed visual states were also compared at 320px and 1280px: action
+backgrounds differed for normal (`rgb(255, 255, 255)`), hover
+(`rgb(237, 245, 240)`), and active (`rgb(220, 235, 225)`). Success text and
+surface were `rgb(57, 118, 92)` and `rgb(234, 245, 238)`; invalid/error text,
+surface, and border were `rgb(112, 36, 36)`, `rgb(255, 244, 243)`, and
+`rgb(139, 46, 46)`. The field error and failed-request alert used the same
+error treatment. A separate Tab sequence confirmed the textbox and all three
+service action buttons matched `:focus-visible` and retained the same 3px
+outline at all three widths.
+
+### Validation findings and disposition
+
+| Finding                                                                                                          | Disposition                                                                                                                                                      | Owner role and rationale                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resident Support's ready message used the emphasis color directly instead of the shared success-state treatment. | **Remediated:** use the shared success status treatment; copy and status ownership remain in Resident Support.                                                   | Resident Support module maintainer; aligns the visual state with the same semantic contract used by the other services without moving service meaning into the token package. |
+| The Resident Support example did not expose an invalid request state.                                            | **Remediated:** added local synthetic-topic validation with a named field, `aria-invalid`, associated text feedback, and a success response; no request is sent. | Resident Support module maintainer; validation and messaging are service behavior, while shared UI supplies presentation foundations.                                         |
+| This local browser inspection does not establish behavior across screen-reader/browser combinations.             | **Scoped follow-up before production deployment:** run an assistive-technology smoke check with the supported browser matrix.                                    | Accessibility QA owner; Testing Library verifies semantic roles, names, and field association, but does not prove that every assistive technology announces them identically. |
+
 ## Dependency ranges, upgrades, and release evidence
 
 Today, CivicNest is a single Vite build: packages and services are source
