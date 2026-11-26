@@ -144,6 +144,8 @@ revision/version tested, compatible range when applicable, exact commands and
 results, affected consumers, accessible roles/names/keyboard/state checks,
 token role and contrast review, visual review, rollback target, and release
 classification. See the [compatibility checks and their limits](./public-contracts.md#compatibility-verification).
+The [clean-checkout verification record](./service-consumption-verification.md)
+shows the worked Permits fixture and full gate succeeding from a fresh worktree.
 Automated checks prove export presence, TypeScript compatibility for covered
 fixtures, and the user-visible behavior actually asserted by tests. They do not
 decide accessibility in every browser/assistive technology, token semantics,
