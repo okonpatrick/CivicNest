@@ -44,9 +44,10 @@ Run `pnpm boundaries` from the repository root. It parses literal imports,
 re-exports, type imports, and literal dynamic imports or `require` calls in
 TypeScript and TSX files under `src/`, `packages/`, and `services/`. It rejects
 cross-service dependencies, service imports from shared packages, and imports
-that reach another shared package except through its exact `@civicnest/<name>`
-root. The check includes built-in positive and negative examples for each
-rule; no intentionally invalid source files are left in the workspace.
+that reach another owned package or service except through its exact
+`@civicnest/<name>` public entry-point alias. The check includes built-in
+positive and negative examples for each rule; no intentionally invalid source
+files are left in the workspace.
 
 The check recognizes service and package aliases using the current
 `@civicnest/<directory-name>` convention and also resolves relative paths.
@@ -56,6 +57,25 @@ runtime module loading, external dependency graphs, or whether an import uses
 an exported symbol. TypeScript, lint, and build checks remain responsible for
 type and module-resolution errors. Run `pnpm check` to include boundary
 verification in the normal quality workflow.
+
+#### Requesting a boundary exception
+
+The checker has no inline suppression or unreviewed allow-list: an exception
+must not be introduced by disabling a rule or adding a one-off path. The
+requester records a decision in `docs/` before changing enforcement, including
+the exact source and target paths, the rule affected, the concrete need,
+alternatives considered, affected owners, compatibility and operational risks,
+and a review date. The owner of the source boundary and the owner of the target
+boundary must approve it; the Frontend Platform team also approves changes to
+the checker and ensures the exception is as narrow as possible.
+
+Record each approval and the review date in the decision. Update the checker
+and its positive/negative controlled examples in the same change, then run
+`pnpm boundaries` and `pnpm check`. At the recorded date, the source and target
+owners and Frontend Platform re-evaluate whether the need remains, confirm the
+documented scope still matches the code, and remove the exception if it is no
+longer necessary. An exception is not considered approved until its decision
+and corresponding tested checker change are reviewed and merged.
 
 These are source and ownership boundaries, not promises of separately
 deployable modules. Keep one Vite build and the existing package scripts while

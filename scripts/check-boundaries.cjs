@@ -123,16 +123,14 @@ function inspectSource(filePath, content) {
       });
     }
 
-    const isAnotherPackage =
-      targetOwner.kind === "package" &&
-      targetOwner.name !== sourceOwner?.name;
+    const isAnotherOwnedModule = targetOwner !== sourceOwner;
     if (
-      isAnotherPackage &&
+      isAnotherOwnedModule &&
       specifier !== `@civicnest/${targetOwner.name}`
     ) {
       diagnostics.push({
         line,
-        message: `import "${specifier}" reaches package "${targetOwner.name}" outside its supported package-root import`,
+        message: `import "${specifier}" reaches ${targetOwner.kind} "${targetOwner.name}" outside its supported public-entry-point import`,
       });
     }
   }
@@ -146,6 +144,12 @@ function runSelfTests() {
       name: "shared package root import is allowed",
       sourcePath: "services/resident-support/index.tsx",
       source: 'import { ServiceCard } from "@civicnest/ui";',
+      expected: [],
+    },
+    {
+      name: "host service entry-point alias is allowed",
+      sourcePath: "src/app/App.tsx",
+      source: 'import { PermitsModule } from "@civicnest/permits";',
       expected: [],
     },
     {
@@ -164,7 +168,10 @@ function runSelfTests() {
       name: "cross-service relative import is rejected",
       sourcePath: "services/resident-support/index.tsx",
       source: 'export { PermitsModule } from "../../services/permits/index";',
-      expected: ["cannot import service"],
+      expected: [
+        "cannot import service",
+        "outside its supported public-entry-point import",
+      ],
     },
     {
       name: "shared package service import is rejected",
@@ -176,19 +183,40 @@ function runSelfTests() {
       name: "package deep alias import is rejected",
       sourcePath: "services/resident-support/index.tsx",
       source: 'import { Internal } from "@civicnest/ui/internal";',
-      expected: ["outside its supported package-root import"],
+      expected: ["outside its supported public-entry-point import"],
     },
     {
       name: "package relative deep import is rejected",
       sourcePath: "services/resident-support/index.tsx",
       source: 'import { Internal } from "../../packages/ui/internal";',
-      expected: ["outside its supported package-root import"],
+      expected: ["outside its supported public-entry-point import"],
     },
     {
       name: "host package relative deep import is rejected",
       sourcePath: "src/main.tsx",
       source: 'import { Internal } from "../packages/ui/internal";',
-      expected: ["outside its supported package-root import"],
+      expected: ["outside its supported public-entry-point import"],
+    },
+    {
+      name: "host service deep alias is rejected",
+      sourcePath: "src/app/App.tsx",
+      source: 'import { Internal } from "@civicnest/permits/internal";',
+      expected: ["outside its supported public-entry-point import"],
+    },
+    {
+      name: "host service relative deep import is rejected",
+      sourcePath: "src/app/App.tsx",
+      source: 'import { Internal } from "../../services/permits/internal";',
+      expected: ["outside its supported public-entry-point import"],
+    },
+    {
+      name: "another service deep import is rejected",
+      sourcePath: "services/resident-support/index.tsx",
+      source: 'import { Internal } from "../../services/permits/internal";',
+      expected: [
+        "cannot import service",
+        "outside its supported public-entry-point import",
+      ],
     },
   ];
 
