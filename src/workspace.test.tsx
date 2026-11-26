@@ -16,6 +16,7 @@ import { normalizeDisplayText } from "@civicnest/utils";
 import { CommunityServicesModule } from "@civicnest/community-services";
 import { PermitsModule } from "@civicnest/permits";
 import { ResidentSupportModule } from "@civicnest/resident-support";
+import { ResidentSupportConsumerFixture } from "../consumer-fixtures/resident-support";
 
 function assertUnreachableToken(token: never): never {
   throw new Error(`Unexpected token name: ${String(token)}`);
@@ -88,6 +89,23 @@ describe("governed workspace public APIs", () => {
       borderColor: civicNestSemanticTokens.colorEmphasis,
       color: civicNestSemanticTokens.colorText,
     });
+  });
+
+  it("preserves ServiceCard semantics and consumer interaction", async () => {
+    const user = userEvent.setup();
+    render(<ResidentSupportConsumerFixture />);
+
+    const card = screen.getByRole("article", {
+      name: "Resident support example",
+    });
+    expect(card).toHaveAccessibleDescription("General example guidance.");
+    await user.click(
+      within(card).getByRole("button", { name: "Show support guidance" }),
+    );
+
+    expect(within(card).getByRole("status")).toHaveTextContent(
+      "Example guidance is ready.",
+    );
   });
 
   it("warns once in dev when reading deprecated colorAccent and keeps replacement silent", async () => {

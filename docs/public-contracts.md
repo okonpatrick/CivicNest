@@ -55,6 +55,7 @@ supported consumer import paths.
 | `@civicnest/design-tokens` | `civicNestSemanticTokens`     | Read the replacement semantic token values: `colorEmphasis`, `colorSurface`, `colorText`, `radiusCard`, `spaceCard`. Prefer this over `civicNestTokens` for new and migrating code. | A readonly object of string literal values. `colorEmphasis` (`"#39765c"`) is the clearly-named accent emphasis token. Identical underlying values to `civicNestTokens`, with no deprecated keys.                          | Adding new semantic token names is compatible when exhaustive consumers of `CivicNestSemanticTokenName` are verified first. Removing or renaming an existing key is breaking.                                                                                                                                                                                  |
 | `@civicnest/design-tokens` | `CivicNestSemanticTokenName`  | Use as a TypeScript type for a property name from `civicNestSemanticTokens`.                                                                                                        | Union of the five semantic token names (`colorEmphasis`, `colorSurface`, `colorText`, `radiusCard`, `spaceCard`).                                                                                                         | A separate union from `CivicNestTokenName`; expanding it may affect exhaustive consumers and must be checked before merging.                                                                                                                                                                                                                                   |
 | `@civicnest/design-tokens` | `CivicNestSemanticTokenValue` | Use as a TypeScript type for a value read from `civicNestSemanticTokens`.                                                                                                           | Union of the current semantic token string literal values.                                                                                                                                                                | The type follows the current values; consumers should not encode literal values in place of token roles.                                                                                                                                                                                                                                                       |
+| `@civicnest/design-tokens` | `CivicNestSemanticTokens`     | Use as a TypeScript type for the complete `civicNestSemanticTokens` object.                                                                                                         | Readonly type inferred from the five semantic token properties.                                                                                                                                                           | The type tracks the semantic token object; changing or removing a property is subject to the same compatibility review as the value export.                                                                                                                                                                                                                    |
 | `@civicnest/ui`            | `ServiceCard`                 | Render a non-interactive service-content container. Requires string `title` and `description`; optionally accepts React `children`.                                                 | A styled semantic `<article>` with an `<h2>` title and paragraph description. Its accessible name comes from the title, and its accessible description comes from the description. Children render after the description. | These props, semantic elements, accessible name/description, and visual token roles are stable. The component does not provide service navigation, data, loading states, or an interactive control.                                                                                                                                                            |
 | `@civicnest/ui`            | `ServiceCardProps`            | Type a consumer's `ServiceCard` props: required `title: string`, required `description: string`, and optional `children?: ReactNode`.                                               | Describes the component's supported inputs; it intentionally does not expose internal styling or arbitrary article attributes.                                                                                            | Additive optional props may be compatible; changing required props or their meaning is breaking. It relies on React's public `ReactNode` type.                                                                                                                                                                                                                 |
 | `@civicnest/utils`         | `normalizeDisplayText`        | Accept a string of display text.                                                                                                                                                    | Returns the text with leading/trailing JavaScript whitespace removed and each internal run of JavaScript whitespace replaced with one ASCII space. Whitespace-only input returns an empty string.                         | The input and output remain strings and this normalization behavior is stable. It does not localize, alter punctuation, normalize Unicode composition, or enforce non-empty text; callers retain responsibility for validation and context-appropriate rendering.                                                                                              |
@@ -188,32 +189,65 @@ names resolve to the same value and that the replacement meets the design
 system's documented contrast requirement. Remove the alias only in a major
 release after the deprecation period and consumer review.
 
-### Verification requirements
+### Compatibility verification
 
-Protect contracts with executable checks, not release notes alone. When the
-first shared package is introduced:
+`pnpm contracts` runs `scripts/check-public-contracts.cjs` and type-checks
+`consumer-fixtures/` with `tsconfig.consumers.json`. The export check reads the
+documented package/export pairs in the table above and compares them with the
+actual TypeScript exports from each package root. It also checks that consumer
+fixtures use only the approved shared-package entry points and that every
+documented shared package is exercised. TypeScript then checks those fixtures
+with the workspace's strict compiler settings.
 
-- Add a consumer contract test that imports representative public symbols
-  from the package entry point and type-checks a minimal consumer. This catches
-  accidental export removal and invalid documented usage.
-- Run TypeScript checks and the production build against consumer imports.
-  Add a boundary check that rejects deep imports into package internals.
-- Test design tokens for required public names, documented aliases during
-  deprecation, and their specified semantic/contrast constraints.
-- Test shared components through user-observable behavior: accessible role
-  and name, keyboard interaction, focus, and announced state where applicable.
-  Avoid tests coupled only to private implementation details.
-- Require the package owner and affected consumers to review contract changes
-  and migration notes; review supplements, but never replaces, automated
-  checks.
+The fixtures are small downstream-style modules for Resident Support, Permits,
+and Community Services. Each imports tokens, `ServiceCard`, and
+`normalizeDisplayText` from `@civicnest/design-tokens`, `@civicnest/ui`, and
+`@civicnest/utils`; none imports a `packages/` implementation path. The
+fixtures compile against the currently checked-in package contracts and the
+dependency versions pinned by the workspace lockfile. Shared packages are not
+independently published yet, so there is no separate package-version range to
+resolve.
 
-The initial consumer contract test in `src/workspace.test.tsx` imports from
-the approved package roots, type-checks representative token and component
-types, and verifies the card's accessible name and description. Run
-`pnpm typecheck` and `pnpm test` for the targeted contract check. For broader
-validation, `pnpm lint`, `pnpm format:check`, and `pnpm build` are the
-repository's additional baseline gates. No deep-import paths or wildcard
-exports are configured for shared packages.
+The contract tests in `src/workspace.test.tsx` and the shared component test
+exercise package-root imports through Testing Library. They check a card's
+accessible article role, name and description, plus an action that reveals a
+status message. The tests assert user-observable contract behavior rather than
+private component structure.
+
+To prove the guard catches a breaking change before release:
+
+1. Temporarily remove or rename an export listed in the table, for example
+   `ServiceCard` in `packages/ui/index.tsx`.
+2. Run `pnpm contracts`. The export check must fail with
+   `@civicnest/ui is missing documented export "ServiceCard"`; if only its
+   props or type contract is broken, TypeScript must report the affected
+   consumer fixture and incompatible type.
+3. Restore the API or update the public contract and migration/versioning plan
+   intentionally. Re-run `pnpm contracts` and `pnpm check` before proceeding.
+
+This negative check was exercised on 2026-11-26 by temporarily renaming
+`ServiceCard` in `packages/ui/index.tsx`. `pnpm contracts` failed before
+type-checking with `@civicnest/ui is missing documented export "ServiceCard"`
+and identified the unlisted `ServiceCardBreakingChange`. The original export
+was restored immediately. The rerun passed with 11 documented exports across
+three shared packages, and `pnpm check` passed boundaries, all 13 tests in
+five files, formatting, type checks, and the production build.
+
+The command proves that documented names are exported, that representative
+consumers type-check through approved roots, and that covered accessible
+behaviors pass in the test environment. It cannot decide whether a token's
+meaning is still appropriate, a visual change creates regression risk, an
+interaction remains usable in every assistive technology/browser, or which
+release classification a proposal deserves. The package owner and affected
+service owners must review semantic token meaning and migration impact;
+accessibility review must assess semantic and keyboard effects; design review
+must assess visual/contrast risk; and release owners must classify the change
+under this policy. Automated results do not replace those human approvals.
+
+Run `pnpm contracts` for the targeted export/type guard and `pnpm check` for
+the complete release gate, including Testing Library behavior, boundaries,
+formatting, and production build. No deep-import paths or wildcard exports are
+configured for shared packages.
 
 ### Verification
 
@@ -222,6 +256,6 @@ exports are configured for shared packages.
 - For a proposed release, check the version decision against the highest
   applicable change class, and record each affected service's compatible
   dependency range and tested resolved version.
-- Run `pnpm typecheck` and `pnpm test` to verify consumer imports and
+- Run `pnpm contracts` and `pnpm test` to verify consumer imports and
   accessible component behavior.
 - Run `pnpm format:check` to verify this policy follows repository formatting.
