@@ -39,13 +39,17 @@ workspace.
 
 ## Consumer dependency ranges
 
-These are proposed declarations, not checked-in manifests. The example
-service uses the new token and must verify against the exact candidate before
-adoption.
+These are proposed declarations, not checked-in manifests. Because
+`resident-support` adopts the new `colorFocusRing` token, its proposed range
+raises the minimum version to `1.4.0` (`^1.4.0`, meaning `>=1.4.0 <2.0.0`) so
+older `1.3.x` releases without the token are excluded, and it still requires
+verification against the exact candidate before adoption. `permits` and
+`community-services` do not adopt `colorFocusRing`, so they can retain
+`^1.3.0` while recording their tested resolved version.
 
 | Consumer service     | Declared package range             | Resolved version tested                       | Verification result / follow-up             |
 | -------------------- | ---------------------------------- | --------------------------------------------- | ------------------------------------------- |
-| `resident-support`   | `@civicnest/design-tokens: ^1.3.0` | Candidate `1.4.0` (illustrative)              | Pending; run service checks before approval |
+| `resident-support`   | `@civicnest/design-tokens: ^1.4.0` | Candidate `1.4.0` (illustrative)              | Pending; run service checks before approval |
 | `permits`            | `@civicnest/design-tokens: ^1.3.0` | Existing compatible resolution to be recorded | No adoption of the new token planned        |
 | `community-services` | `@civicnest/design-tokens: ^1.3.0` | Existing compatible resolution to be recorded | No adoption of the new token planned        |
 
@@ -76,11 +80,16 @@ observed results before approval.
 
 ## Migration and approval
 
-- **Consumer migration required:** No for existing consumers. A service that
-  opts into the token must first update its declared range if its current
-  range excludes `1.4.0`, then test its UI against the resolved version.
-- **Migration steps or guide:** None for existing token use. Record adoption
-  and visual checks for any consumer that chooses the new token.
+- **Consumer migration required:** No for existing token usage. Any service
+  that opts into `colorFocusRing` must raise its declared minimum version to
+  at least `1.4.0` (for example, updating `^1.3.0` to `^1.4.0`, or using a
+  narrower pin) so earlier `1.3.x` versions lacking the token cannot be
+  resolved, and must verify its UI against the exact resolved `1.4.0` version
+  before relying on it.
+- **Migration steps or guide:** None for existing token use. For a consumer
+  adopting `colorFocusRing`, update its declared range from `^1.3.0` to
+  `^1.4.0`, record the exact resolved version tested, and complete visual and
+  contrast checks before approval.
 - **Approvals:** Pending package owner and any service owner adopting the
   token.
 - **Release decision and date:** Pending compatibility checks and approval.
