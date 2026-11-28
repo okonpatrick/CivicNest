@@ -1,4 +1,3 @@
-import { civicNestSemanticTokens } from "@civicnest/design-tokens";
 import { ServiceCard } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
 import { permitsSuccessDemoFixture } from "./demo-fixtures";
@@ -15,7 +14,10 @@ export function PermitsSummary() {
       title="Permits"
       description={normalizeDisplayText("Example permit appointment options.")}
     >
-      <p role="status" style={{ color: civicNestSemanticTokens.colorEmphasis }}>
+      <p
+        className="service-demo__status service-demo__status--success"
+        role="status"
+      >
         {message}
       </p>
     </ServiceCard>

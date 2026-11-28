@@ -38,6 +38,14 @@ Service modules must not import another service module. Package consumers use
 the supported `@civicnest/<package>` roots rather than another package's
 internal files.
 
+The design-token package keeps raw palette/scale primitives private and
+exports a typed semantic taxonomy through `@civicnest/design-tokens`.
+Components and services consume roles such as
+`civicNestSemanticTokenTaxonomy.color.text.primary`, not primitive palette
+slots. The taxonomy is service-neutral: Resident Support, Permits, and
+Community Services wording, routes, request models, and fixtures remain with
+their owning modules.
+
 ### Automated dependency boundary check
 
 Run `pnpm boundaries` from the repository root. It parses literal imports,

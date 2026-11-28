@@ -1,12 +1,12 @@
 import {
-  civicNestSemanticTokens,
-  type CivicNestSemanticTokenValue,
+  civicNestSemanticTokenTaxonomy,
+  type CivicNestSemanticTokenTaxonomyValue,
 } from "@civicnest/design-tokens";
 import { ServiceCard } from "@civicnest/ui";
 import { normalizeDisplayText } from "@civicnest/utils";
 
-const emphasisColor: CivicNestSemanticTokenValue =
-  civicNestSemanticTokens.colorEmphasis;
+const emphasisColor: CivicNestSemanticTokenTaxonomyValue =
+  civicNestSemanticTokenTaxonomy.color.emphasis.primary;
 
 export function CommunityServicesConsumerFixture() {
   return (
