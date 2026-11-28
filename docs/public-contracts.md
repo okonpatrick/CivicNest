@@ -263,13 +263,20 @@ release after the deprecation period and consumer review.
 
 ### Compatibility verification
 
-`pnpm contracts` runs `scripts/check-public-contracts.cjs` and type-checks
-`consumer-fixtures/` with `tsconfig.consumers.json`. The export check reads the
-documented package/export pairs in the table above and compares them with the
-actual TypeScript exports from each package root. It also checks that consumer
+`pnpm contracts` runs `scripts/check-public-contracts.cjs`, type-checks
+`consumer-fixtures/` with `tsconfig.consumers.json`, and runs
+`src/design-token-contract.test.tsx`. The export check reads the documented
+package/export pairs in the table above and compares them with the actual
+TypeScript exports from each package root. It also checks that consumer
 fixtures use only the approved shared-package entry points and that every
-documented shared package is exercised. TypeScript then checks those fixtures
-with the workspace's strict compiler settings.
+documented shared package is exercised. The design-token consumer fixture
+imports the public taxonomy from `@civicnest/design-tokens` only; its exhaustive
+path map ties every `CivicNestSemanticTokenPath` to a structural category
+(hex color, CSS dimension, font family, numeric weight/line-height, or opacity).
+This makes removed paths, unlisted additions, and wrong category types fail
+the strict consumer type check. The focused runtime test validates actual token
+values against those categories and exercises token-backed accessible focus
+and error behavior. No fixture imports `packages/` implementation paths.
 
 The fixtures are small downstream-style modules for Resident Support, Permits,
 and Community Services. Each imports tokens, `ServiceCard`, and
@@ -280,22 +287,38 @@ dependency versions pinned by the workspace lockfile. Shared packages are not
 independently published yet, so there is no separate package-version range to
 resolve.
 
-The contract tests in `src/workspace.test.tsx` and the shared component test
-exercise package-root imports through Testing Library. They check a card's
-accessible article role, name and description, plus an action that reveals a
-status message. The tests assert user-observable contract behavior rather than
-private component structure.
+The contract tests in `src/workspace.test.tsx`,
+`src/design-token-contract.test.tsx`, and the shared component tests exercise
+package-root imports through Testing Library. They check user-observable
+accessible roles, names, descriptions, keyboard focus, error announcement,
+and state changes rather than relying solely on private implementation
+structure.
 
-To prove the guard catches a breaking change before release:
+#### Negative token-contract check
 
-1. Temporarily remove or rename an export listed in the table, for example
-   `ServiceCard` in `packages/ui/index.tsx`.
-2. Run `pnpm contracts`. The export check must fail with
-   `@civicnest/ui is missing documented export "ServiceCard"`; if only its
-   props or type contract is broken, TypeScript must report the affected
-   consumer fixture and incompatible type.
-3. Restore the API or update the public contract and migration/versioning plan
-   intentionally. Re-run `pnpm contracts` and `pnpm check` before proceeding.
+To prove the guard catches a token category break before release:
+
+1. Temporarily change the declared type for `color.text.primary` in
+   `CivicNestSemanticTokenTaxonomy` (`packages/design-tokens/index.ts`) from
+   its color type to `"3px"`.
+2. Run `pnpm contracts`. It must fail TypeScript validation because the
+   implementation's color value and the public consumer fixture's expected
+   hex-color category no longer match the declared contract.
+3. Restore the declaration immediately, then run `pnpm contracts` and
+   `pnpm check` again. Do not commit the intentional break.
+
+This token negative check was exercised on 2026-11-28: changing the declared
+`color.text.primary` type to `"3px"` made `pnpm contracts` fail with
+TS2322 in `consumer-fixtures/design-tokens/index.ts`: the value did not satisfy
+its hex-color category. It also reported the matching implementation/type
+mismatch in `packages/design-tokens/index.ts`. The declaration was restored
+immediately; the rerun passed all three focused token-contract tests and the
+consumer type-check.
+
+The export guard also has a negative check: temporarily rename `ServiceCard`
+in `packages/ui/index.tsx`; `pnpm contracts` must report
+`@civicnest/ui is missing documented export "ServiceCard"`. Restore it
+immediately and verify the normal command passes.
 
 This negative check was exercised on 2026-11-26 by temporarily renaming
 `ServiceCard` in `packages/ui/index.tsx`. `pnpm contracts` failed before
@@ -321,10 +344,38 @@ the complete release gate, including Testing Library behavior, boundaries,
 formatting, and production build. No deep-import paths or wildcard exports are
 configured for shared packages.
 
+#### Manual visual and accessibility review
+
+Automation verifies structural categories, documented exports, type
+compatibility for covered consumers, selected numeric contrast thresholds,
+stylesheet token wiring, and user-observable states in the test environment.
+It cannot establish subjective visual quality, detect every cross-service
+regression, or prove assistive-technology behavior. For every token change
+affecting rendering, reviewers must manually:
+
+1. Identify each affected consumer and state from the token path, then run the
+   app with synthetic data.
+2. Compare before/after screenshots or browser inspection at the documented
+   narrow (320px), intermediate (768px), and wide (1280px) viewports; inspect
+   wrapping, clipping, reflow, affected surfaces, and state distinction.
+3. Use the keyboard to reach every affected action and verify the focus
+   indicator remains visible and distinguishable in normal, hover, active,
+   disabled, and forced-colors modes where applicable.
+4. Review relevant text and non-text contrast against the token taxonomy's
+   documented thresholds; have accessibility review assess changed semantics,
+   focus, reflow, and announcements with the supported assistive-technology
+   matrix where applicable.
+5. Record the source revision, consumers, viewports/states inspected,
+   accessibility and visual reviewers, findings, and disposition in the
+   release record. Human reviewers—not unit tests—approve semantic meaning,
+   visual-regression risk, accessibility impact, and release classification.
+
 ### Verification
 
 - Check that each export in the initial export table is present only at its
   documented package root and that no internal path is supported.
+- Run `pnpm contracts` to verify the complete curated token path/category
+  contract, public package exports, and downstream fixture type checks.
 - For a proposed release, check the version decision against the highest
   applicable change class, and record each affected service's compatible
   dependency range and tested resolved version.

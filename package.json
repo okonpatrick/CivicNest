@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
     "boundaries": "node scripts/check-boundaries.cjs",
-    "contracts": "node scripts/check-public-contracts.cjs && tsc --noEmit -p tsconfig.consumers.json",
+    "contracts": "node scripts/check-public-contracts.cjs && tsc --noEmit -p tsconfig.consumers.json && vitest run src/design-token-contract.test.tsx",
     "format": "prettier --write \"**/*.{js,cjs,ts,tsx,css,json,md}\"",
     "format:check": "prettier --check \"**/*.{js,cjs,ts,tsx,css,json,md}\"",
     "test": "vitest run",
