@@ -63,12 +63,16 @@ the role is genuinely shared. The
 and required checks.
 
 Additive token paths require review for semantic clarity, contrast intent, and
-consumer type impact. Renaming or removing an existing public path is a
-breaking contract change and follows the
-[versioning](./public-contracts.md#version-policy-and-package-dependencies)
-and [deprecation](./deprecation-and-migration.md) policies. Verify public
-exports and representative consumers with `pnpm contracts`; run `pnpm check`
-before review.
+consumer type impact. Public names and documented meanings are consumer
+contracts, including visual and accessibility behavior. Use the
+[token evolution rules and release checklist](./public-contracts.md#public-design-token-evolution)
+to classify value, semantic, responsive, focus, and interaction changes.
+Renaming or removing an existing public path is a breaking contract change and
+follows the [deprecation and migration](./deprecation-and-migration.md)
+policies. Verify public exports and representative consumers with
+`pnpm contracts`; run `pnpm check` before review. Automated checks do not
+replace human review of semantic meaning, visual risk, accessibility impact,
+or release classification.
 
 ## Accessible visual states and contrast
 

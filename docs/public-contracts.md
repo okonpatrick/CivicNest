@@ -125,6 +125,70 @@ behavior, is major. A bug fix that restores the published contract is patch;
 an intentional change to that contract is classified by its compatibility
 impact, even if described as a fix.
 
+#### Public design-token evolution
+
+For `@civicnest/design-tokens`, each public semantic path and its documented
+meaning are contracts for independently released service teams. The contract
+includes the role, supported value format, contrast intent, supported
+responsive behavior, and documented focus and interaction guarantees. It is
+not limited to the exported TypeScript shape: a change can be breaking even
+when every consumer still compiles if it changes contrast, layout, interaction
+visibility, or resident-facing meaning in a way consumers reasonably rely on.
+Classify the highest impact in a release; do not call a change compatible
+solely because type checks pass.
+
+| Token change                               | Patch                                                                                                                                                                                                                       | Minor                                                                                                                                                                                                                              | Major                                                                                                                                                                                                                                                                                                               | Simple check                                                                                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Add a semantic token                       | Not normally a patch.                                                                                                                                                                                                       | Add a new optional path, such as a genuinely shared `color.state.info` role, without changing existing defaults or breaking consumers that inspect or exhaustively handle the public shape.                                        | If adding it breaks a valid consumer, such as by widening a closed union used in exhaustive handling, redesign the addition or classify the incompatible change as major.                                                                                                                                           | Run `pnpm contracts`; add a representative consumer and ensure existing consumer fixtures still type-check.                              |
+| Correct an unintended value                | Correct a demonstrated defect against the existing documented contract (for example, restore the documented `focus.ring.width` or `color.validation.error` treatment) without breaking a consumer or changing the contract. | If the correction is a compatible design update rather than restoration of a published guarantee, use minor.                                                                                                                       | If the correction changes a behavior or guarantee existing consumers reasonably rely on, use major despite calling it a fix; document the migration and impact.                                                                                                                                                     | Compare the current value and its role with the written contract; run `pnpm check` and the relevant contrast test.                       |
+| Change an existing token's value           | Only when the value is wrong relative to an explicit published requirement and the correction restores that requirement without consumer breakage.                                                                          | Tune a value while preserving its semantic role, format, contrast intent, supported surfaces, and existing consumer behavior. For example, adjust `interaction.hover.surface` while retaining a distinct, perceivable hover state. | Change the value in a way that violates documented contrast or format, changes a relied-on visual outcome, hides an interaction state, or requires consumers to change assumptions or implementation.                                                                                                               | Run relevant contrast checks and compare affected states in a browser; record the visual reviewer and consumer impact.                   |
+| Change semantic meaning                    | A wording correction that clarifies the same meaning and has no behavior impact.                                                                                                                                            | Add a separate token for a new role; do not repurpose the existing path.                                                                                                                                                           | Repurpose an existing name or materially change its documented meaning, such as turning `color.state.error` into a neutral color or changing `responsive.breakpoint.wide` to mean a different layout mode, even if its type and value format are unchanged.                                                         | Search all consumer uses and have the package owner and affected service owners approve the unchanged or changed meaning.                |
+| Rename or remove a token                   | No: the public name remains part of the contract.                                                                                                                                                                           | Introduce a replacement as an additive path, retaining the old path as a deprecated alias with the same meaning and behavior.                                                                                                      | Remove or rename the old path only under the deprecation and migration policy; a rename without a working compatibility alias is major.                                                                                                                                                                             | Run `pnpm contracts` against the alias/replacement and confirm the migration guide and deprecation period.                               |
+| Change responsive behavior                 | Correct a defect that violates the documented viewport or reflow contract without breaking existing layouts.                                                                                                                | Make a compatible refinement that preserves supported viewport ranges and consumer behavior, or add an opt-in responsive capability.                                                                                               | Change documented breakpoints, sizing, reflow, or defaults such that supported layouts or consumer assumptions must change.                                                                                                                                                                                         | Run `pnpm check` and inspect the affected consumers at documented narrow, intermediate, and wide widths.                                 |
+| Change focus or interaction-state behavior | Fix a defect by restoring a documented guarantee, such as visible keyboard focus or distinct active/disabled treatment, without removing another guarantee.                                                                 | Add a compatible improvement or optional state while preserving keyboard operation, focus visibility, contrast intent, and existing state distinctions.                                                                            | Weaken or remove a documented focus, keyboard, contrast, or state-visibility guarantee, or change behavior consumers rely on. Accessibility regressions are not an acceptable release outcome; a required breaking improvement needs a major-version migration plan and must still meet accessibility requirements. | Run relevant `pnpm test` checks, then manually inspect keyboard focus and affected states; include accessibility review when applicable. |
+
+#### Token release checklist and evidence limits
+
+Complete this checklist for every proposed public token change in the shared
+package release record:
+
+- [ ] **Affected consumers:** list each public path changed and search/document
+      every consuming service and shared UI use; identify affected defaults,
+      surfaces, states, and migration needs.
+- [ ] **Automated verification:** run `pnpm contracts` and `pnpm check`;
+      record exact results and revision. Add or update tests for documented
+      contrast thresholds, responsive contracts, and interaction guarantees when
+      affected.
+- [ ] **Accessibility review:** where color, sizing, responsive behavior,
+      focus, or interaction changes, review applicable WCAG contrast and reflow
+      expectations, keyboard visibility/operation, forced-colors behavior, and
+      relevant status semantics. Record why a review is not applicable when none
+      of these are affected.
+- [ ] **Visual-risk assessment:** identify affected components, viewports,
+      surfaces, and states; inspect visual diffs or browser renderings and record
+      the reviewer and any accepted risk.
+- [ ] **Version classification:** apply the table above and the package
+      Semantic Versioning rules; record the highest impact and human reviewer.
+- [ ] **Release notes:** state token paths, old and new values where relevant,
+      documented meanings, visible/accessibility effects, compatibility decision,
+      and consumer migration or deprecation steps.
+- [ ] **Rollback decision:** record go/no-go, the rollback target or forward-fix
+      plan, observable rollback triggers, responsible owner, and how consumers
+      already migrated will remain compatible.
+
+Automated checks can establish documented exports, type compatibility for
+covered consumers, lint/build/test results, and numeric assertions for the
+specific contrast combinations or responsive thresholds they exercise. They
+cannot determine whether a token's semantic meaning remains appropriate,
+whether an untested visual change harms a consumer's interface, whether
+assistive technology communicates the changed state adequately, or which
+version impact is justified. Those decisions require human review: the package
+owner and affected service owners review semantic meaning and consumer impact;
+design and accessibility reviewers assess visual and accessibility risk; and
+the release owner records and approves the version classification. A passing
+automated check is evidence for its stated scope, not approval of those
+judgments.
+
 Services record a compatible dependency range for every shared package they
 consume in the service package manifest or, until such manifests exist, in
 the release record. For example, `@civicnest/design-tokens: ^1.3.0` declares

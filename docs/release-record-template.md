@@ -33,6 +33,29 @@ passing result.
   deprecation period, replacement, and affected consumers, or state why these
   do not apply.
 
+## Public design-token review
+
+Complete for a release that changes `@civicnest/design-tokens`; otherwise
+state `Not applicable` with a reason. Follow the
+[token evolution policy](./public-contracts.md#public-design-token-evolution)
+and record evidence or a named follow-up for every item.
+
+- [ ] **Affected-consumer analysis:** List consuming services/shared UI, token
+      paths, affected surfaces or states, and migration impact.
+- [ ] **Automated verification:** Record `pnpm contracts`, `pnpm check`, and
+      any targeted contrast, responsive, or interaction checks that apply.
+- [ ] **Accessibility review:** Record keyboard/focus, contrast, reflow,
+      forced-colors, and semantic review where affected; otherwise explain why
+      it is not applicable.
+- [ ] **Visual-risk assessment:** Record affected viewports/states, visual
+      comparison method, reviewer, and accepted risks.
+- [ ] **Version classification:** Record patch/minor/major, the highest-impact
+      rule applied, and the release owner's human review.
+- [ ] **Release notes:** Document token paths, changed values/meanings,
+      consumer-visible effects, and migration/deprecation guidance.
+- [ ] **Rollback decision:** Record go/no-go, rollback target or forward-fix,
+      triggers, owner, and compatibility for consumers already migrated.
+
 ## Consumer dependency ranges
 
 For each consuming service, record both the declared compatible range and the
