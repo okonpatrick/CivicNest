@@ -163,16 +163,41 @@ No token or UI implementation deep imports are used.
 
 ### Source evidence snapshot
 
-The following is the complete shared demonstration stylesheet and the complete
-Permits and Community Services fixture source reviewed for this validation.
-These snapshots were checked against
+The following complete source blocks are the reviewed-source evidence for
+commit `a80d42e7fd71436895e2ade5385a82bc8b1032d7`: the shared demonstration
+stylesheet and the Permits and Community Services fixtures. The blocks were
+originally captured at
+commit `6d07bc985e8a5696433ac42487738b677d9941bb`; their Git blob IDs confirm
+that these exact contents are still present at the reviewed commit. They were
+checked against
 [`src/styles.css`](../src/styles.css),
 [`services/permits/demo-fixtures.ts`](../services/permits/demo-fixtures.ts),
 and
 [`services/community-services/demo-fixtures.ts`](../services/community-services/demo-fixtures.ts)
-at commit `6d07bc9` (`6d07bc985e8a5696433ac42487738b677d9941bb`). Each fenced
-source snapshot was compared byte-for-byte with the corresponding file at that
-revision. The linked source files remain authoritative.
+at both revisions. Each fenced source block matches its current source file
+byte-for-byte, verified by the Git blob IDs below in the working tree and at
+`HEAD`. The linked source files remain authoritative.
+
+| Current source file                            | Git blob ID                                |
+| ---------------------------------------------- | ------------------------------------------ |
+| `src/styles.css`                               | `0770930f09c808d5fa594fae24361394ddca4ae0` |
+| `services/permits/demo-fixtures.ts`            | `538e85afa3f1ecaaaed959fe82d824b4ebb6af98` |
+| `services/community-services/demo-fixtures.ts` | `d36b65d8a8616c421212d8fb5291e67634591b73` |
+| `services/permits/index.tsx`                   | `0e25e5f4c14de10b5c0649c48087f6a15756ce43` |
+| `services/community-services/index.tsx`        | `9364620618b8a6597a0adbb83807c60083fdddd9` |
+
+**Current-source confirmation (2026-11-27, commit
+`a80d42e7fd71436895e2ade5385a82bc8b1032d7`):** The current stylesheet,
+Permits and Community Services fixtures, and their service components were
+compared with the documented `6d07bc9` revision; all five files have identical
+Git blob IDs, shown above. The source worktree had no modifications before
+this documentation update. I also reviewed the current fixture values: Permits
+contains only generic example labels, fictional weekday windows, and
+no-reservation/no-request wording; Community Services contains only fictional
+learning/shared-space examples and explicit synthetic/no-real-listing wording.
+All rendered fixture fields are covered by the trace above. No personal names,
+contact details, addresses, identifiers, specific dates or times, resident
+requests, live listings, or production responses occur in either fixture.
 
 The stylesheet keeps request wording and data out of shared presentation.
 Permits' unadorned loading text inherits the card's primary text color and is
@@ -576,15 +601,43 @@ content; document `scrollWidth` measured 320px, 753px, and 1265px respectively,
 each no greater than the viewport. The full browser sequence completed at each
 width without layout or interaction defects.
 
-**Current-source fixture review (commit `6d07bc9`):** The complete fixture
-sources above contain only generic labels (`Example option A/B`, fictional
-weekday morning/afternoon windows, community learning/shared spaces), generic
-explanations, and explicit sample/synthetic/no-reservation/no-request
-disclaimers. No personal names, contact details, addresses, identifiers,
-specific dates/times, resident requests, live listings, or production
-responses occur in the fixture values. Every rendered field is included in
-the source-to-rendered-state trace; no additional fixture properties are
-rendered by these two modules.
+**Current-source repeat (2026-11-27, commit
+`a80d42e7fd71436895e2ade5385a82bc8b1032d7`):** Repeated the inspection against
+the current Vite demo after confirming the stylesheet, both fixtures, and both
+service components are identical to the embedded-source revision. At 320px,
+768px, and 1280px, the initial page showed Permits loading and Community
+Services failure. Tab focus on the Resident Support textbox displayed
+`rgb(24, 50, 41) solid 3px`. Empty submission displayed the associated
+validation alert and set `aria-invalid="true"`; a fictional topic displayed the
+success status. The Permits action displayed its sample options, and the
+Community Services retry displayed its sample results. At all three widths,
+all service cards remained within the viewport and document `scrollWidth`
+measured 320px, 753px, and 1265px respectively, with no horizontal overflow.
+The loading, invalid, failure, and success messages remained textually
+distinguishable through their content and semantic roles.
+
+**Current-source fixture review (2026-11-27, commit
+`a80d42e7fd71436895e2ade5385a82bc8b1032d7`):** Reviewed the current fixture
+contents directly and verified their blob IDs match the embedded snapshots
+above. Permits contains generic labels (`Example option A/B`), fictional
+weekday morning/afternoon windows, generic explanations, and explicit
+no-reservation/no-request wording. Community Services contains fictional
+learning/shared-space examples and synthetic/no-real-listing wording. No
+personal names, contact details, addresses, identifiers, specific dates or
+times, resident requests, live listings, or production responses occur in
+either fixture. Every rendered fixture field is included in the
+source-to-rendered-state trace; neither module renders additional fixture
+properties.
+
+**Validation refreshed (2026-11-28, commit
+`a80d42e7fd71436895e2ade5385a82bc8b1032d7`):** Rechecked the current Permits
+and Community Services fixture files against both their embedded source blocks
+and their Git blobs at `HEAD`; both files match exactly, with no working-tree
+changes to either fixture. Their service components and the shared stylesheet
+also retain the documented blob IDs, so the existing browser inspection
+describes the same rendered source. `pnpm test` passed: 21 tests in 8 files,
+including Permits loading-to-success, Community Services error/recovery, and
+Resident Support invalid-input-to-success interactions.
 
 ### Validation findings and disposition
 
