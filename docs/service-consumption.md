@@ -163,32 +163,37 @@ No token or UI implementation deep imports are used.
 
 ### Source evidence snapshot
 
-The following complete source blocks are the reviewed-source evidence for
-commit `a80d42e7fd71436895e2ade5385a82bc8b1032d7`: the shared demonstration
-stylesheet and the Permits and Community Services fixtures. The blocks were
-originally captured at
-commit `6d07bc985e8a5696433ac42487738b677d9941bb`; their Git blob IDs confirm
+The following complete source blocks are the reviewed-source evidence for the
+shared demonstration stylesheet and the Permits and Community Services
+fixtures. They were originally captured at commit
+`6d07bc985e8a5696433ac42487738b677d9941bb` and compared with the reviewed
+commit `d94cde3abf2ff1eb04e1db4555476c4bed4cf1de`. Their Git blob IDs confirm
 that these exact contents are still present at the reviewed commit. They were
 checked against
 [`src/styles.css`](../src/styles.css),
 [`services/permits/demo-fixtures.ts`](../services/permits/demo-fixtures.ts),
 and
 [`services/community-services/demo-fixtures.ts`](../services/community-services/demo-fixtures.ts)
-at both revisions. Each fenced source block matches its current source file
-byte-for-byte, verified by the Git blob IDs below in the working tree and at
-`HEAD`. The linked source files remain authoritative.
+at both revisions. Each fenced source block matches its source file
+byte-for-byte; the Git blob IDs below were checked in the working tree and at
+`HEAD` for the reviewed commit. The linked source files remain authoritative.
 
-| Current source file                            | Git blob ID                                |
+| Reviewed source file                           | Git blob ID                                |
 | ---------------------------------------------- | ------------------------------------------ |
 | `src/styles.css`                               | `0770930f09c808d5fa594fae24361394ddca4ae0` |
-| `services/permits/demo-fixtures.ts`            | `538e85afa3f1ecaaaed959fe82d824b4ebb6af98` |
-| `services/community-services/demo-fixtures.ts` | `d36b65d8a8616c421212d8fb5291e67634591b73` |
+| `packages/ui/index.tsx`                        | `8fb52a8c5ef2eb9deecfc2b59dc64b03154d09b2` |
+| `packages/design-tokens/index.ts`              | `7be5123cfc93e80445a31c99ef591074c5c56950` |
+| `src/app/App.tsx`                              | `b882b02d0f665f514aa5805eb75a9eb6daf749d8` |
+| `services/resident-support/index.tsx`          | `4d15a07c20c4a856e016d3535b421b01c1f4a924` |
+| `services/resident-support/demo-fixtures.ts`   | `ca8acd0fa2098b253ea6c569ae7f33c1128b3425` |
 | `services/permits/index.tsx`                   | `0e25e5f4c14de10b5c0649c48087f6a15756ce43` |
+| `services/permits/demo-fixtures.ts`            | `538e85afa3f1ecaaaed959fe82d824b4ebb6af98` |
 | `services/community-services/index.tsx`        | `9364620618b8a6597a0adbb83807c60083fdddd9` |
+| `services/community-services/demo-fixtures.ts` | `d36b65d8a8616c421212d8fb5291e67634591b73` |
 
-**Current-source confirmation (2026-11-27, commit
-`a80d42e7fd71436895e2ade5385a82bc8b1032d7`):** The current stylesheet,
-Permits and Community Services fixtures, and their service components were
+**Source confirmation (2026-11-27, commit
+`a80d42e7fd71436895e2ade5385a82bc8b1032d7`):** At that revision, the
+stylesheet, Permits and Community Services fixtures, and their service components were
 compared with the documented `6d07bc9` revision; all five files have identical
 Git blob IDs, shown above. The source worktree had no modifications before
 this documentation update. I also reviewed the current fixture values: Permits
@@ -601,9 +606,9 @@ content; document `scrollWidth` measured 320px, 753px, and 1265px respectively,
 each no greater than the viewport. The full browser sequence completed at each
 width without layout or interaction defects.
 
-**Current-source repeat (2026-11-27, commit
+**Browser inspection (2026-11-27, commit
 `a80d42e7fd71436895e2ade5385a82bc8b1032d7`):** Repeated the inspection against
-the current Vite demo after confirming the stylesheet, both fixtures, and both
+the Vite demo after confirming the stylesheet, both fixtures, and both
 service components are identical to the embedded-source revision. At 320px,
 768px, and 1280px, the initial page showed Permits loading and Community
 Services failure. Tab focus on the Resident Support textbox displayed
@@ -616,7 +621,7 @@ measured 320px, 753px, and 1265px respectively, with no horizontal overflow.
 The loading, invalid, failure, and success messages remained textually
 distinguishable through their content and semantic roles.
 
-**Current-source fixture review (2026-11-27, commit
+**Fixture review (2026-11-27, commit
 `a80d42e7fd71436895e2ade5385a82bc8b1032d7`):** Reviewed the current fixture
 contents directly and verified their blob IDs match the embedded snapshots
 above. Permits contains generic labels (`Example option A/B`), fictional
@@ -629,15 +634,49 @@ either fixture. Every rendered fixture field is included in the
 source-to-rendered-state trace; neither module renders additional fixture
 properties.
 
-**Validation refreshed (2026-11-28, commit
-`a80d42e7fd71436895e2ade5385a82bc8b1032d7`):** Rechecked the current Permits
-and Community Services fixture files against both their embedded source blocks
-and their Git blobs at `HEAD`; both files match exactly, with no working-tree
-changes to either fixture. Their service components and the shared stylesheet
-also retain the documented blob IDs, so the existing browser inspection
-describes the same rendered source. `pnpm test` passed: 21 tests in 8 files,
-including Permits loading-to-success, Community Services error/recovery, and
-Resident Support invalid-input-to-success interactions.
+**Reviewed-commit validation (2026-11-28, commit
+`d94cde3abf2ff1eb04e1db4555476c4bed4cf1de`):** Rechecked all ten source files
+in the table above. Each working-tree blob matched its blob at `HEAD`, including
+the public `ServiceCard`, the semantic-token taxonomy, the application layout,
+all three service components, and their three synthetic fixtures. The service
+components contain no local color declarations; `ServiceCard` supplies
+`--cn-color-*` and `--cn-focus-ring-*` custom properties from the public token
+taxonomy, and the shared stylesheet consumes those properties for success,
+warning, request error, field validation, action, disabled, and focus states.
+The source-to-rendered-state trace remains accurate.
+
+Reviewed every rendered value in the current fixtures. Resident Support uses
+generic guidance and fictional topic examples; Permits uses generic example
+labels, fictional weekday appointment windows, explanatory text, and
+no-reservation/no-request wording; Community Services uses fictional
+learning/shared-space examples and synthetic/no-real-listing wording. No
+personal names, contact details, addresses, identifiers, specific dates or
+times, resident requests, live listings, or production responses occur in
+these fixtures.
+
+`pnpm test` passed on this commit: 21 tests in 8 files. The full `pnpm check`
+also passed, including lint, dependency boundaries, public contracts, tests,
+formatting, strict TypeScript, and the production build.
+
+**Browser and keyboard inspection (2026-11-28, commit
+`d94cde3abf2ff1eb04e1db4555476c4bed4cf1de`):** Started the local Vite demo and
+repeated the five-step inspection at 320px, 768px, and 1280px. Tab focused the
+Resident Support textbox first; the textbox and each service action displayed
+a `rgb(24, 50, 41) solid 3px` focus outline. Empty submission showed the
+associated invalid alert and `aria-invalid="true"`; typing a fictional topic
+and pressing Enter showed the success status. Keyboard activation then showed
+Permits sample options and recovered Community Services results. Loading,
+invalid, failure, and success remained distinguishable by their text and
+semantic roles.
+
+Computed service styles matched the current shared token values: success text,
+surface, and border were `rgb(57, 118, 92)`, `rgb(234, 245, 238)`, and
+`rgb(57, 118, 92)`; warning text was `rgb(104, 69, 0)`; invalid/error text,
+surface, and border were `rgb(112, 36, 36)`, `rgb(255, 244, 243)`, and
+`rgb(139, 46, 46)`. The input's invalid border used the validation token.
+Cards and their contents fit without clipping; document `scrollWidth` measured
+320px, 753px, and 1265px at the respective viewport widths, all no greater
+than the viewport. No new visual or interaction findings.
 
 ### Validation findings and disposition
 
