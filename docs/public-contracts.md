@@ -287,6 +287,22 @@ dependency versions pinned by the workspace lockfile. Shared packages are not
 independently published yet, so there is no separate package-version range to
 resolve.
 
+The checked-in consumer examples make that boundary concrete:
+[Resident Support](../consumer-fixtures/resident-support/index.tsx) and
+[Community Services](../consumer-fixtures/community-services/index.tsx) import
+`civicNestSemanticTokenTaxonomy` and
+`CivicNestSemanticTokenTaxonomyValue` from the approved
+`@civicnest/design-tokens` root and use the public
+`color.emphasis.primary` role. [Permits](../consumer-fixtures/permits/index.tsx)
+imports `ServiceCard` and `normalizeDisplayText` from their approved roots and
+renders its synthetic status through the shared card's token-backed styles;
+its adjacent [`demo-fixtures.ts`](../consumer-fixtures/permits/demo-fixtures.ts)
+contains only fictional appointment-window examples. The dedicated
+[token-contract consumer](../consumer-fixtures/design-tokens/index.ts) imports
+the public taxonomy root and type-checks every documented semantic leaf path
+against its structural value category. `pnpm contracts` enforces approved
+imports and strict type-checking across all these fixtures.
+
 The contract tests in `src/workspace.test.tsx`,
 `src/design-token-contract.test.tsx`, and the shared component tests exercise
 package-root imports through Testing Library. They check user-observable
@@ -313,7 +329,11 @@ TS2322 in `consumer-fixtures/design-tokens/index.ts`: the value did not satisfy
 its hex-color category. It also reported the matching implementation/type
 mismatch in `packages/design-tokens/index.ts`. The declaration was restored
 immediately; the rerun passed all three focused token-contract tests and the
-consumer type-check.
+consumer type-check. The restored declaration was verified unchanged at
+commit `206b165d5d449f73e6223302269246cf17939cda`; on that restored revision,
+`pnpm check` passed dependency boundaries (25 source files), public contracts,
+all 24 tests in 9 files, formatting, strict TypeScript, and the 39-module
+production build.
 
 The export guard also has a negative check: temporarily rename `ServiceCard`
 in `packages/ui/index.tsx`; `pnpm contracts` must report
